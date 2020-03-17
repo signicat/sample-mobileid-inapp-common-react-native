@@ -12,4 +12,6 @@ ios/Pods/
 
 .DS_Store
 
-/ios/*xcworkspace/xcuserdata/
+#/ios/*xcworkspace/xcuserdata/
+
+build.properties

@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "332798051413",
+    "firebase_url": "https://api-project-332798051413.firebaseio.com",
+    "project_id": "api-project-332798051413",
+    "storage_bucket": "api-project-332798051413.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:332798051413:android:71522350ccdefefb1f00dc",
+        "android_client_info": {
+          "package_name": "com.signicat.sampleapp.inapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "332798051413-dpu61aujkh4au7csf57e21useojimak3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBxMesh5ry_qiAQnTo4x3kA_ZVBugLAdhU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "332798051413-dpu61aujkh4au7csf57e21useojimak3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

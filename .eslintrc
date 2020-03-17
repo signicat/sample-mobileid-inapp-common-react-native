@@ -1,0 +1,42 @@
+/***
+ ESLint -  code linting
+
+ See https://eslint.org/ for documentation of rules
+
+ Run lint on everything:
+ npm run lint
+
+***/
+{
+  "env": {
+    "browser": true,
+    "es6": true,
+    "node": true,
+    "jest": true
+  },
+  "extends": "airbnb",
+  "parser": "babel-eslint",
+  "rules": {
+    // Overriding rules. 0 = off, 1 = warn, 2 = error
+    "max-len": [1,200],
+    "no-alert": 1, // Allow alert() functions for now. Remove when all alert's have been replaced
+    "no-console": 0, // Allow console.log() functions for now. Remove when all alert's have been replaced
+    "arrow-body-style": [1, "as-needed"],
+    "object-shorthand": [2, "consistent"],
+
+    // react
+    "react/jsx-filename-extension": 0,
+    "react/destructuring-assignment": 0,
+    "react/prop-types": 0, // Will not require prop-types yet
+    "react/no-typos": 0, // ViewPropTypes.style reported as typo. See eslint-plugin-react issue #1389
+    "react/jsx-tag-spacing": [2, {
+      "closingSlash": "never",
+      "beforeSelfClosing": "allow",
+      "afterOpening": "never"
+    }],
+
+    // others
+    "import/no-extraneous-dependencies": ["error", {"devDependencies": ["**/*.test.js", "*jest*.js", "__mocks__/*.js"]}],
+    "import/no-duplicates": [0, {"considerQueryString": true}]
+  }
+}

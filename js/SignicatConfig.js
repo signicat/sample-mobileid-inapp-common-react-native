@@ -1,5 +1,5 @@
 module.exports = {
-  encapServerUrl: 'https://dev01.signicat.com/encap_mobileid',
-  encapApplicationId: 'nbidmobile_default',
-  encapPublicKey: 'MFIwEAYHKoZIzj0CAQYFK4EEABoDPgAEAfdEY0BYY8yINZaHED77apY3/nZK3HZSnkUOrqUVAUcHe+RGt/iitJy8CGQmMjPA/gql5mREyiAPAPg2',
+  encapServerUrl: '<Get_it_from_Signicat>',
+  encapApplicationId: '<Get_it_from_Signicat>',
+  encapPublicKey: '<Get_it_from_Signicat>',
 };

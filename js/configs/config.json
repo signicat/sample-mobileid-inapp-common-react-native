@@ -1,0 +1,8 @@
+[
+  {
+    "id": "beta",
+    "encapServerUrl": "<GET_IT_FROM_SIGNICAT>",
+    "encapApplicationId": "<GET_IT_FROM_SIGNICAT>",
+    "encapPublicKey": "<GET_IT_FROM_SIGNICAT>"
+  }
+]

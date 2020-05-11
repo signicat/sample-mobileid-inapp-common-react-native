@@ -6,6 +6,7 @@ import React from 'react';
 
 import styles from './Styles';
 import Colors from './Colors';
+import SignicatConfig from './configs/SignicatConfig';
 
 const logo = require('../assets/logo.png');
 
@@ -125,11 +126,30 @@ const InactivateStateUI = props => (
         {props.appMode === 'WEB2APP' ? ' from web' : ' from device'}
       </Text>
     </TouchableOpacity>
+    <TouchableOpacity
+      accessibilityRole="button"
+      onPress={() => {
+        props.goToHome();
+      }}
+      style={styles.linkContainer}
+    >
+      <Text style={styles.link}>Go to home</Text>
+    </TouchableOpacity>
   </View>
 );
 
 const ChooseAppModeUI = props => (
   <View style={styles.container}>
+    <TouchableOpacity
+      accessibilityRole="button"
+      onPress={() => {
+        props.setInAppMode();
+      }}
+      style={[styles.buttonContainer, { backgroundColor: Colors.lightPurple, opacity: 0.8 }]}
+    >
+      <Text style={[styles.link, { textAlign: 'center', fontSize: 25 }]}>InApp Mobile</Text>
+      <Text style={[styles.link, { textAlign: 'center', fontSize: 15 }]}>Reg and Auth starts from app</Text>
+    </TouchableOpacity>
     <TouchableOpacity
       accessibilityRole="button"
       onPress={() => {
@@ -143,12 +163,81 @@ const ChooseAppModeUI = props => (
     <TouchableOpacity
       accessibilityRole="button"
       onPress={() => {
-        props.setInAppMode();
+        props.setSettingsMode();
       }}
       style={[styles.buttonContainer, { backgroundColor: Colors.lightPurple, opacity: 0.8 }]}
     >
-      <Text style={[styles.link, { textAlign: 'center', fontSize: 25 }]}>InApp Mobile</Text>
-      <Text style={[styles.link, { textAlign: 'center', fontSize: 15 }]}>Reg and Auth starts from app</Text>
+      <Text style={[styles.link, { textAlign: 'center', fontSize: 25 }]}>Settings</Text>
+      <Text style={[styles.link, { textAlign: 'center', fontSize: 15 }]}>Configure merchant and signicat settings</Text>
+    </TouchableOpacity>
+  </View>
+);
+
+const ChangeSettingsUI = props => (
+  <View style={styles.container}>
+    <Text style={{ paddingBottom: 20, fontSize: 25 }}>Settings</Text>
+    <View style={{ flexDirection: 'row' }}>
+      <Text style={{
+        fontSize: 18, paddingRight: 10, height: 50, textAlignVertical: 'center',
+      }}
+      >
+        Merchant server.
+      </Text>
+      <TextInput
+        style={{
+          flex: 0.9, paddingLeft: 8, backgroundColor: Colors.white, width: 200, height: 50, color: Colors.black,
+        }}
+        autoFocus={false}
+        keyboardType="url"
+        maxLength={200}
+        placeholder={props.currentMerchantServer ? props.currentMerchantServer : 'type http(s)://server:port'}
+        placeholderTextColor="grey"
+        value={props.defaultValue}
+        underlineColorAndroid="transparent"
+        onChangeText={(addr) => {
+          if (props.hasValidUrlFormat(addr)) {
+            props.setServerAddress(addr);
+          }
+        }}
+      />
+    </View>
+    <View style={{ flexDirection: 'row' }}>
+      <Text style={{
+        fontSize: 18, paddingRight: 10, height: 50, textAlignVertical: 'center',
+      }}
+      >
+        Signicat Env.
+      </Text>
+      <TextInput
+        style={{
+          flex: 0.95, paddingLeft: 8, backgroundColor: Colors.white, width: 200, height: 50, color: Colors.black,
+        }}
+        autoFocus={false}
+        maxLength={200}
+        placeholder={props.currentSignicatEnv ? props.currentSignicatEnv : 'type dev, beta, qa, preprod, etc'}
+        placeholderTextColor="grey"
+        value={props.defaultValue}
+        underlineColorAndroid="transparent"
+        onChangeText={(envId) => {
+          if (envId.toLocaleLowerCase() === 'dev' || envId.toLocaleLowerCase() === 'qa' || envId.toLocaleLowerCase() === 'beta' || envId.toLocaleLowerCase() === 'preprod' || envId.toLocaleLowerCase() === 'preprodeu01') {
+            const signicatConfig = SignicatConfig.get(envId.toLocaleLowerCase());
+            if (signicatConfig === undefined || signicatConfig === null) {
+              Alert.alert('Ops!', 'Signicat config not found!');
+            } else {
+              props.onEncapConfigChange(signicatConfig);
+            }
+          }
+        }}
+      />
+    </View>
+    <TouchableOpacity
+      accessibilityRole="button"
+      onPress={() => {
+        props.goToHome();
+      }}
+      style={[styles.linkContainer, { paddingBottom: 10, paddingTop: 20 }]}
+    >
+      <Text style={styles.link}>Go to home</Text>
     </TouchableOpacity>
   </View>
 );
@@ -180,10 +269,19 @@ const ActivatedStateUI = props => (
     >
       <Text style={styles.link}>Deactivate</Text>
     </TouchableOpacity>
+    <TouchableOpacity
+      accessibilityRole="button"
+      onPress={() => {
+        props.goToHome();
+      }}
+      style={styles.linkContainer}
+    >
+      <Text style={styles.link}>Go to home</Text>
+    </TouchableOpacity>
   </View>
 );
 
 
 export {
-  Header, InactivateStateUI, ActivatedStateUI, EncapConfigError, EnterActivationCodeUI, EnterPincodeCodeUI, ChooseAppModeUI, ServerAddressUI,
+  Header, InactivateStateUI, ActivatedStateUI, EncapConfigError, EnterActivationCodeUI, EnterPincodeCodeUI, ChooseAppModeUI, ChangeSettingsUI,
 };

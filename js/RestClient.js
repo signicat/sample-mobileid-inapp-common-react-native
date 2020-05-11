@@ -1,17 +1,31 @@
 
 import axios from 'axios';
 
-const { baseEndpoint, createAccountEndpoint, initAuthSessionEndpoint } = require('./MerchantConfig');
+const { createAccountEndpointFromDevice, initAuthSessionEndpointFromDevice } = require('./configs/MerchantConfig');
 
 const RestClient = {
 
+  /*
   startRegister(accountName, deviceName) {
     const startRegisterUrl = `${baseEndpoint + createAccountEndpoint}?externalRef=${accountName}&deviceName=${deviceName}`;
     return new Promise((resolve, reject) => this.get(startRegisterUrl, resolve, reject));
   },
+  */
 
+  startRegisterFromDevice(merchantServer, accountName, deviceName) {
+    const startRegisterUrl = `${merchantServer + createAccountEndpointFromDevice}?externalRef=${accountName}&deviceName=${deviceName}`;
+    return new Promise((resolve, reject) => this.get(startRegisterUrl, resolve, reject));
+  },
+
+  /*
   startAuth(externalRef, deviceId) {
     const startAuthUrl = `${baseEndpoint + initAuthSessionEndpoint}?externalRef=${externalRef}&deviceId=${deviceId}`;
+    return new Promise((resolve, reject) => this.get(startAuthUrl, resolve, reject));
+  },
+   */
+
+  startAuthFromDevice(merchantServer, externalRef, deviceId) {
+    const startAuthUrl = `${merchantServer + initAuthSessionEndpointFromDevice}?externalRef=${externalRef}&deviceId=${deviceId}`;
     return new Promise((resolve, reject) => this.get(startAuthUrl, resolve, reject));
   },
 

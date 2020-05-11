@@ -1,0 +1,5 @@
+// EncapAPI build 3.7.4
+#define ENCAP_API_VERSION @"3.7.4"
+#define ENCAP_API_VERSION_OFFSET @""
+#define ENCAP_API_VERSION_COMMIT @""
+#define ENCAP_API_IS_DIRTY 0

@@ -66,6 +66,14 @@ RCT_REMAP_METHOD(isDeviceActivated, isActivatedResolver:(RCTPromiseResolveBlock)
   }
 }
 
+RCT_EXPORT_METHOD(cancelSession: (RCTResponseSenderBlock)successCallback callback:(RCTResponseSenderBlock)errorCallback) {
+  [self.encapController cancelSessionOnSuccess:^{
+    successCallback(@[[NSNull null]]);
+  } onError:^(EncapErrorResult *errorResult) {
+    [self handleError:errorResult inState:@"cancelSession" callback:errorCallback];
+  }];
+}
+
 RCT_REMAP_METHOD(getRegistrationId, getRegistrationIdResolver:(RCTPromiseResolveBlock)resolve getRegistrationIdRejecter:(RCTPromiseRejectBlock)reject){
   EncapConfig *config = [EncapConfig sharedConfig];
   NSString *registrationId = config.registrationId;

@@ -11,6 +11,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import com.encapsecurity.encap.android.client.api.AsyncCallback;
 import com.encapsecurity.encap.android.client.api.AuthMethod;
 import com.encapsecurity.encap.android.client.api.Controller;
+import com.encapsecurity.encap.android.client.api.CancelSessionResult;
 import com.encapsecurity.encap.android.client.api.DeactivateResult;
 import com.encapsecurity.encap.android.client.api.DevicePinAuthParameter;
 import com.encapsecurity.encap.android.client.api.FinishActivationResult;
@@ -81,6 +82,23 @@ public class EncapModule extends ReactContextBaseJavaModule {
     public void isDeviceActivated(final Promise promise) {
         Log.d(TAG, "isDeviceActivated");
         promise.resolve(getController().isActivated());
+    }
+
+    @ReactMethod
+    public void cancelSession(final Callback successCallback, final Callback errorCallback) {
+        Log.d(TAG, "Cancel authentication");
+        getController().cancelSession(new AsyncCallback<CancelSessionResult>() {
+            @Override
+            public void onSuccess(final CancelSessionResult cancelSessionResult) {
+                invokeCallback(successCallback);
+            }
+
+            @Override
+            public void onFailure(final ErrorCodeException e) {
+                Log.d(TAG, e.toString());
+                invokeErrorCallback(errorCallback, e);
+            }
+        });
     }
 
     @ReactMethod

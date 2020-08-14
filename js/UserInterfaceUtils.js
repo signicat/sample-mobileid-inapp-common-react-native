@@ -6,7 +6,7 @@ import React from 'react';
 
 import styles from './Styles';
 import Colors from './Colors';
-import SignicatConfig from './configs/SignicatConfig';
+import AppState from './configs/AppState';
 
 const logo = require('../assets/logo.png');
 
@@ -25,34 +25,6 @@ const Header = () => (
     Signicat MobileID InApp Integration
     </Text>
   </ImageBackground>
-);
-
-const ServerAddressUI = props => (
-  <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.lighter }}>
-    <Text
-      style={{
-        flex: 0.3, fontSize: 15, paddingRight: 8, color: 'black', textAlign: 'right', textAlignVertical: 'center',
-      }}
-    >
-          Backend:
-    </Text>
-
-    <TextInput
-      style={{
-        flex: 0.7, paddingLeft: 8, backgroundColor: Colors.black, width: 200, height: 50, color: Colors.white,
-      }}
-      autoFocus={false}
-      maxLength={200}
-      keyboardType="url"
-      placeholder="Enter your server address and port here"
-      placeholderTextColor="grey"
-      value={props.defaultValue}
-      underlineColorAndroid="transparent"
-      onChangeText={(addr) => {
-        props.setServerAddress(addr);
-      }}
-    />
-  </View>
 );
 
 const EncapConfigError = () => (
@@ -114,6 +86,60 @@ const EnterPincodeCodeUI = props => (
 
 const InactivateStateUI = props => (
   <View style={styles.container}>
+    {
+      props.appMode === AppState.INAPP && (
+        <View style={{ flexDirection: 'column' }}>
+          <View style={{ flexDirection: 'row' }}>
+            <Text style={{
+              fontSize: 18, paddingRight: 10, height: 50, textAlignVertical: 'center',
+            }}
+            >
+              User ref.
+            </Text>
+            <TextInput
+              style={{
+                flex: 0.9, paddingLeft: 8, backgroundColor: Colors.white, width: 200, height: 50, color: Colors.black,
+              }}
+              autoFocus={false}
+              keyboardType="url"
+              maxLength={200}
+              editable={props.deviceActivated !== true}
+              placeholder={props.currentUser ? props.currentUser : 'not set, type it'}
+              placeholderTextColor="grey"
+              value={props.defaultValue}
+              underlineColorAndroid="transparent"
+              onChangeText={(newUser) => {
+                props.onUserChange(newUser);
+              }}
+            />
+          </View>
+          <View style={{ flexDirection: 'row' }}>
+            <Text style={{
+              fontSize: 18, paddingRight: 10, height: 50, textAlignVertical: 'center',
+            }}
+            >
+              Device name.
+            </Text>
+            <TextInput
+              style={{
+                flex: 0.9, paddingLeft: 8, backgroundColor: Colors.white, width: 200, height: 50, color: Colors.black,
+              }}
+              autoFocus={false}
+              keyboardType="url"
+              maxLength={200}
+              editable={props.deviceActivated !== true}
+              placeholder={props.currentDevice ? props.currentDevice : 'not set, type it'}
+              placeholderTextColor="grey"
+              value={props.defaultValue}
+              underlineColorAndroid="transparent"
+              onChangeText={(newUser) => {
+                props.onDeviceChange(newUser);
+              }}
+            />
+          </View>
+        </View>
+      )
+    }
     <TouchableOpacity
       accessibilityRole="button"
       onPress={() => {
@@ -123,7 +149,7 @@ const InactivateStateUI = props => (
     >
       <Text style={styles.link}>
         Activate
-        {props.appMode === 'WEB2APP' ? ' from web' : ' from device'}
+        {props.appMode === AppState.WEB2APP ? ' from web' : ' from device'}
       </Text>
     </TouchableOpacity>
     <TouchableOpacity
@@ -220,12 +246,7 @@ const ChangeSettingsUI = props => (
         underlineColorAndroid="transparent"
         onChangeText={(envId) => {
           if (envId.toLocaleLowerCase() === 'dev' || envId.toLocaleLowerCase() === 'qa' || envId.toLocaleLowerCase() === 'beta' || envId.toLocaleLowerCase() === 'preprod' || envId.toLocaleLowerCase() === 'preprodeu01') {
-            const signicatConfig = SignicatConfig.get(envId.toLocaleLowerCase());
-            if (signicatConfig === undefined || signicatConfig === null) {
-              Alert.alert('Ops!', 'Signicat config not found!');
-            } else {
-              props.onEncapConfigChange(signicatConfig);
-            }
+            props.onSignicatEnvChange(envId);
           }
         }}
       />
@@ -244,10 +265,38 @@ const ChangeSettingsUI = props => (
 
 const ActivatedStateUI = props => (
   <View style={styles.container}>
+    {
+      props.appMode === AppState.INAPP && (
+        <View style={{ flexDirection: 'row' }}>
+          <Text style={{
+            fontSize: 18, paddingRight: 10, height: 50, textAlignVertical: 'center',
+          }}
+          >
+            User ref.
+          </Text>
+          <TextInput
+            style={{
+              flex: 0.9, paddingLeft: 8, backgroundColor: Colors.white, width: 200, height: 50, color: Colors.black,
+            }}
+            autoFocus={false}
+            keyboardType="url"
+            maxLength={200}
+            editable
+            placeholder={props.currentUser ? props.currentUser : 'not set, type it'}
+            placeholderTextColor="grey"
+            value={props.defaultValue}
+            underlineColorAndroid="transparent"
+            onChangeText={(newUser) => {
+              props.onUserChange(newUser);
+            }}
+          />
+        </View>
+      )
+    }
     <TouchableOpacity
       accessibilityRole="button"
       onPress={() => {
-        if (props.appMode === 'WEB2APP') {
+        if (props.appMode === AppState.WEB2APP) {
           Alert.alert('Warning!', 'Please start authentication from website');
         } else {
           props.startAuthenticate();
@@ -257,7 +306,7 @@ const ActivatedStateUI = props => (
     >
       <Text style={styles.link}>
           Authenticate
-        {props.appMode === 'WEB2APP' ? ' from web' : ' from device'}
+        {props.appMode === AppState.WEB2APP ? ' from web' : ' from device'}
       </Text>
     </TouchableOpacity>
     <TouchableOpacity

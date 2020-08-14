@@ -1,0 +1,40 @@
+{
+  "name": "InAppSample",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "android": "react-native run-android",
+    "ios": "react-native run-ios",
+    "start": "react-native start",
+    "test": "jest",
+    "lint": "eslint .",
+    "lintfix": "eslint --fix .",
+    "freshinstall": "npm cache clean --force && rm -rf node_modules && rm -f package-lock.json && npm install && react-native link",
+    "lockedinstall": "npm cache clean --force && rm -rf node_modules && npm ci && react-native link"
+  },
+  "dependencies": {
+    "@react-native-community/push-notification-ios": "^1.0.6",
+    "axios": "0.19.0",
+    "react": "16.9.0",
+    "react-native": "0.61.2",
+    "@react-native-community/async-storage": "1.6.2"
+  },
+  "devDependencies": {
+    "@babel/core": "7.6.2",
+    "@babel/runtime": "7.6.2",
+    "@react-native-community/eslint-config": "0.0.3",
+    "babel-jest": "24.9.0",
+    "eslint": "6.5.1",
+    "eslint-config-airbnb": "17.1.0",
+    "eslint-plugin-import": "2.14.0",
+    "eslint-plugin-jsx-a11y": "6.1.1",
+    "eslint-plugin-react": "7.11.1",
+    "eslint-plugin-react-native": "3.5.0",
+    "jest": "24.9.0",
+    "metro-react-native-babel-preset": "0.51.1",
+    "react-test-renderer": "16.9.0"
+  },
+  "jest": {
+    "preset": "react-native"
+  }
+}

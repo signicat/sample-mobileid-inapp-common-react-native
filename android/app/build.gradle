@@ -1,6 +1,8 @@
 apply plugin: "com.android.application"
 
 import com.android.build.OutputFile
+import groovy.json.JsonSlurper
+
 
 /**
  * The react.gradle file registers a task for each build variant (e.g. bundleDebugJsAndAssets
@@ -119,6 +121,53 @@ def jscFlavor = 'org.webkit:android-jsc:+'
  */
 def enableHermes = project.ext.react.get("enableHermes", false);
 
+def getProjectProperty(name, defaultValue) {
+    return project.hasProperty(name) ? project[name] : defaultValue
+}
+
+def getNpmVersion() {
+    def inputFile = project.file("../../package.json")
+    def packageJson = new JsonSlurper().parseText(inputFile.text)
+    return packageJson["version"]
+}
+
+static getVersionCodeInteger() {
+    try {
+        def git = org.ajoberstar.grgit.Grgit.open()
+        def versionCode = git.log().size()
+        git.close()
+        return versionCode
+    } catch (ignored) {
+        return 1
+    }
+}
+
+static getVersionNameExtension() {
+    try {
+        def git = org.ajoberstar.grgit.Grgit.open()
+        def versionNameSuffix = "-${git.head().getAbbreviatedId(8)}"
+        git.close()
+        return versionNameSuffix
+    } catch (ignored) {
+        return ""
+    }
+}
+
+
+def renameAPK(variant, defaultConfig) {
+    variant.outputs.all { output ->
+        //def formattedDate = new Date().format('yyMMdd')
+        def file = output.outputFile
+        def relativeRootDir = output.packageApplication.outputDirectory.toPath().relativize(rootDir.toPath()).toFile()
+        def fileName = "MobileID_InApp_Sample" + "-" + defaultConfig.versionName + "." + defaultConfig.versionCode
+        if (gradle.startParameter.taskNames.contains("assembleDebug")) {
+            fileName = fileName + "-DEBUG"
+        }
+        fileName = fileName + ".apk"
+        outputFileName = new File("$relativeRootDir/app/build/outputs/apk", fileName)
+    }
+}
+
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
 
@@ -131,8 +180,8 @@ android {
         applicationId "com.signicat.sampleapp.inapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode getVersionCodeInteger()
+        versionName getNpmVersion() + getVersionNameExtension()
     }
     splits {
         abi {
@@ -149,6 +198,12 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        release {
+            storeFile file(getProjectProperty("keystoreFile", "."))
+            storePassword getProjectProperty("storePass", "")
+            keyAlias getProjectProperty("keyAlias", "")
+            keyPassword getProjectProperty("keyPass", "")
+        }
     }
     buildTypes {
         debug {
@@ -157,24 +212,14 @@ android {
         release {
             // Caution! In production, you need to generate your own keystore file.
             // see https://facebook.github.io/react-native/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
     }
     // applicationVariants are e.g. debug, release
     applicationVariants.all { variant ->
-        variant.outputs.each { output ->
-            // For each separate APK per architecture, set a unique version code as described here:
-            // https://developer.android.com/studio/build/configure-apk-splits.html
-            def versionCodes = ["armeabi-v7a": 1, "x86": 2, "arm64-v8a": 3, "x86_64": 4]
-            def abi = output.getFilter(OutputFile.ABI)
-            if (abi != null) {  // null for the universal-debug, universal-release variants
-                output.versionCodeOverride =
-                        versionCodes.get(abi) * 1048576 + defaultConfig.versionCode
-            }
-
-        }
+        renameAPK(variant, defaultConfig)
     }
 }
 
@@ -206,7 +251,6 @@ dependencies {
     implementation 'com.encapsecurity:encap-android-api:3.5.11@aar'
 
     // implementation 'com.google.firebase:firebase-analytics:17.2.0'
-
 }
 
 // Run this once to be able to run the application with BUCK

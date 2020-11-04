@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import {
+  AppState,
   SafeAreaView,
   ScrollView,
   View,
@@ -26,7 +27,7 @@ import {
 import styles from './Styles';
 import RestClient from './RestClient';
 import SignicatConfig from './configs/SignicatConfig';
-import AppState from './configs/AppState';
+import AppStateType from './configs/AppState';
 
 const { baseEndpoint } = require('./configs/MerchantConfig');
 
@@ -48,13 +49,17 @@ class App extends Component {
       encapConfigured: false,
       showEnterPinUI: false,
       showActivationCodeUI: false,
-      appMode: AppState.UNKNOWN,
+      appMode: AppStateType.UNKNOWN,
+      appState: AppState.currentState,
       signicatConfig: SignicatConfig.get(),
     };
   }
 
   async componentDidMount() {
     console.log(`Platform ${Platform.OS}`);
+
+    const sigEnv = await AsyncStorage.getItem(KEY_SIGNICAT_ENV);
+    this.setState({ signicatConfig: sigEnv !== null && sigEnv !== undefined ? sigEnv : undefined });
 
     // try to get saved merchant server url otherwise use from config file
     const url = await AsyncStorage.getItem(KEY_MERCHANT_SERVER_URL);
@@ -98,12 +103,34 @@ class App extends Component {
     if (this.props.init === 'authentication') {
       this.authStartFomBrowser();
     }
+
+    AppState.addEventListener('change', this.handleAppStateChange);
   }
+
+  componentWillUnmount(): void {
+    AppState.removeEventListener('change', this.handleAppStateChange);
+  }
+
+  handleAppStateChange = (nextAppState) => {
+    if (this.state.appState.match(/inactive|background/) && nextAppState === 'active') {
+      console.log('App has come to the foreground!');
+      this.checkPendingAuthentication();
+    }
+    this.setState({ appState: nextAppState });
+  };
+
+  checkPendingAuthentication = async () => {
+    console.log('Check Encap to see if an authentication has been started.');
+    const activated = await NativeModules.EncapModule.isDeviceActivated();
+    if (activated) {
+      this.authStartFomBrowser();
+    }
+  };
 
     onPushNotification = () => {
       console.log('Push Notification Arrived');
       console.log('Start auth...');
-      if (this.state.appMode === AppState.WEB2APP || this.state.appMode === AppState.UNKNOWN) {
+      if (this.state.appMode === AppStateType.WEB2APP || this.state.appMode === AppStateType.UNKNOWN) {
         console.log(`app mode... ${this.state.appMode}`);
         this.authStartFomBrowser();
       }
@@ -146,7 +173,7 @@ class App extends Component {
               regInProgress: false,
               showEnterPinUI: false,
               showActivationCodeUI: false,
-              appMode: AppState.UNKNOWN, // to go back to home screen
+              appMode: AppStateType.UNKNOWN, // to go back to home screen
             });
             this.storeDataToAsyncStorage(KEY_SIGNICAT_ENV, newEnvId);
           });
@@ -254,7 +281,7 @@ class App extends Component {
     performPinActivation = (pincode) => {
       NativeModules.EncapModule.finishPinCodeActivation(pincode,
         () => {
-          if (this.state.appMode === AppState.INAPP) {
+          if (this.state.appMode === AppStateType.INAPP) {
             this.finishRegOperationOnDevice();
           } else {
             const logMsg = 'Finish activation successful from web';
@@ -264,7 +291,7 @@ class App extends Component {
               deviceActivated: true,
               showEnterPinUI: false,
               regInProgress: false,
-              appMode: AppState.UNKNOWN,
+              appMode: AppStateType.UNKNOWN,
               currentUser: null,
             });
             // meanwhile customer backend will be polling Signicat
@@ -301,7 +328,7 @@ class App extends Component {
                   regInProgress: false,
                   statusUrl: null,
                   completeUrl: null,
-                  appMode: AppState.UNKNOWN,
+                  appMode: AppStateType.UNKNOWN,
                 });
                 console.log(completeResponse);
                 this.saveCurrentUser();
@@ -342,7 +369,7 @@ class App extends Component {
                 completeUrl: initAuthResponse.completeUrl,
                 authInProgress: true,
                 showEnterPinUI: true, // show pin and call finish auth afterwards
-                appMode: AppState.INAPP,
+                appMode: AppStateType.INAPP,
               });
             }, (err) => {
               console.error(err);
@@ -356,23 +383,23 @@ class App extends Component {
 
     authStartFomBrowser = () => {
       console.log('authenticate from web...');
-      NativeModules.EncapModule.startAuthentication((availableBiometryAuthMethods, contextTitle, contextContent) => {
-        console.log(`availableBiometryAuthMethods ${availableBiometryAuthMethods}`);
+      NativeModules.EncapModule.startAuthentication((hasPincode, hasFingerprint, contextTitle, contextContent) => {
+        console.log(`has pin, fingerprint? ${hasPincode} ${hasFingerprint}`);
         console.log(`contextTitle ${contextTitle}`);
         console.log(`contextContent ${contextContent}`);
 
-        if (contextContent === undefined || contextContent === '') {
-          this.setState({ authInProgress: true, showEnterPinUI: true, appMode: AppState.WEB2APP });
+        if (contextTitle === undefined || contextTitle === '') {
+          this.setState({ authInProgress: true, showEnterPinUI: true, appMode: AppStateType.WEB2APP });
         } else {
           Alert.alert(
             'Consent Signature',
-            contextContent,
+            contextTitle,
             [
               {
                 text: 'Yes',
                 onPress: () => {
                   console.log('Consent OK');
-                  this.setState({ authInProgress: true, showEnterPinUI: true, appMode: AppState.WEB2APP });
+                  this.setState({ authInProgress: true, showEnterPinUI: true, appMode: AppStateType.WEB2APP });
                 },
               },
               {
@@ -403,7 +430,7 @@ class App extends Component {
 
     performPinAuthentication = (pincode) => {
       NativeModules.EncapModule.finishPinCodeAuthentication(pincode, (fResponse) => {
-        if (this.state.appMode === AppState.INAPP) {
+        if (this.state.appMode === AppStateType.INAPP) {
           this.finishAuthOperationOnDevice(fResponse);
         } else {
           const logMsg = 'Finish WebAuth successful';
@@ -411,7 +438,7 @@ class App extends Component {
           Alert.alert('Success', logMsg);
           // meanwhile customer backend will be polling Signicat
           // and eventually will know that auth process is successful
-          this.setState({ authInProgress: false, appMode: AppState.UNKNOWN });
+          this.setState({ authInProgress: false, appMode: AppStateType.UNKNOWN });
         }
       }, (err) => {
         const errMsg = `Finish WebAuth Error ${err}`;
@@ -435,7 +462,7 @@ class App extends Component {
                   statusUrl: null,
                   completeUrl: null,
                   authInProgress: false,
-                  appMode: AppState.UNKNOWN,
+                  appMode: AppStateType.UNKNOWN,
                 });
                 console.log(completeResponse);
                 Alert.alert('Authentication is successful! ');
@@ -466,7 +493,7 @@ class App extends Component {
           regInProgress: false,
           showEnterPinUI: false,
           showActivationCodeUI: false,
-          appMode: AppState.UNKNOWN, // to go back to home sscreen
+          appMode: AppStateType.UNKNOWN, // to go back to home screen
         });
 
         // Note - here, device deactivation is only done at client side just for the sake of testing
@@ -488,7 +515,7 @@ class App extends Component {
 
     deviceIsNotActivatedRegInProgressActivationCodeNeeded = () => {
       if (this.state.deviceActivated === !true
-          && this.state.appMode === AppState.WEB2APP
+          && this.state.appMode === AppStateType.WEB2APP
           && this.state.regInProgress === true
           && this.state.showActivationCodeUI === true) {
         return true;
@@ -506,8 +533,8 @@ class App extends Component {
     }
 
     deviceIsActivatedAndOperationIsNotInProgress = () => {
-      if (this.state.appMode !== AppState.UNKNOWN
-          && this.state.appMode !== AppState.SETTINGS
+      if (this.state.appMode !== AppStateType.UNKNOWN
+          && this.state.appMode !== AppStateType.SETTINGS
           && this.state.deviceActivated === true
           && this.state.regInProgress === !true
           && this.state.authInProgress === !true) {
@@ -527,7 +554,7 @@ class App extends Component {
 
     setToWeb2AppMode = () => {
       if (this.validURL(this.state.merchantServerUrl)) {
-        this.setState({ appMode: AppState.WEB2APP });
+        this.setState({ appMode: AppStateType.WEB2APP });
       } else {
         Alert.alert('Error!', 'Invalid server URL');
       }
@@ -535,14 +562,14 @@ class App extends Component {
 
     setToInAppMode = () => {
       if (this.validURL(this.state.merchantServerUrl)) {
-        this.setState({ appMode: AppState.INAPP });
+        this.setState({ appMode: AppStateType.INAPP });
       } else {
         Alert.alert('Error!', 'Invalid server URL');
       }
     }
 
   setToSettingsMode = async () => {
-    this.setState({ appMode: AppState.SETTINGS });
+    this.setState({ appMode: AppStateType.SETTINGS });
   }
 
      validURL = (str) => {
@@ -557,7 +584,7 @@ class App extends Component {
      }
 
      goToHomeScreen = () => {
-       this.setState({ appMode: AppState.UNKNOWN });
+       this.setState({ appMode: AppStateType.UNKNOWN });
      }
 
      render() {
@@ -574,7 +601,7 @@ class App extends Component {
                 this.state.encapConfigured === true && (
                 <View style={styles.body}>
                   {
-                    this.state.appMode === AppState.UNKNOWN && (
+                    this.state.appMode === AppStateType.UNKNOWN && (
                     <ChooseAppModeUI
                       setWeb2AppMode={this.setToWeb2AppMode}
                       setInAppMode={this.setToInAppMode}
@@ -582,7 +609,7 @@ class App extends Component {
                     />)
                   }
                   {
-                    this.state.appMode === AppState.SETTINGS && (
+                    this.state.appMode === AppStateType.SETTINGS && (
                     <ChangeSettingsUI
                       currentMerchantServer={this.state.merchantServerUrl}
                       currentSignicatEnv={this.state.signicatConfig.id}
@@ -597,7 +624,7 @@ class App extends Component {
                     />)
                   }
                   {
-                    this.deviceIsNotActivatedAndOperationIsNotInProgress() && this.state.appMode === AppState.INAPP && (
+                    this.deviceIsNotActivatedAndOperationIsNotInProgress() && this.state.appMode === AppStateType.INAPP && (
                     <InactivateStateUI
                       appMode={this.state.appMode}
                       deviceActivated={this.state.deviceActivated}
@@ -610,7 +637,7 @@ class App extends Component {
                     />)
                   }
                   {
-                    this.deviceIsNotActivatedAndOperationIsNotInProgress() && this.state.appMode === AppState.WEB2APP && (
+                    this.deviceIsNotActivatedAndOperationIsNotInProgress() && this.state.appMode === AppStateType.WEB2APP && (
                     <InactivateStateUI
                       appMode={this.state.appMode}
                       performAction={this.activateFomBrowser}

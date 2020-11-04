@@ -6,7 +6,7 @@ import React from 'react';
 
 import styles from './Styles';
 import Colors from './Colors';
-import AppState from './configs/AppState';
+import AppStateType from './configs/AppState';
 
 const logo = require('../assets/logo.png');
 
@@ -87,7 +87,7 @@ const EnterPincodeCodeUI = props => (
 const InactivateStateUI = props => (
   <View style={styles.container}>
     {
-      props.appMode === AppState.INAPP && (
+      props.appMode === AppStateType.INAPP && (
         <View style={{ flexDirection: 'column' }}>
           <View style={{ flexDirection: 'row' }}>
             <Text style={{
@@ -149,7 +149,7 @@ const InactivateStateUI = props => (
     >
       <Text style={styles.link}>
         Activate
-        {props.appMode === AppState.WEB2APP ? ' from web' : ' from device'}
+        {props.appMode === AppStateType.WEB2APP ? ' from web' : ' from device'}
       </Text>
     </TouchableOpacity>
     <TouchableOpacity
@@ -245,7 +245,12 @@ const ChangeSettingsUI = props => (
         value={props.defaultValue}
         underlineColorAndroid="transparent"
         onChangeText={(envId) => {
-          if (envId.toLocaleLowerCase() === 'dev' || envId.toLocaleLowerCase() === 'qa' || envId.toLocaleLowerCase() === 'beta' || envId.toLocaleLowerCase() === 'preprod' || envId.toLocaleLowerCase() === 'preprodeu01') {
+          if (envId.toLocaleLowerCase() === 'dev'
+            || envId.toLocaleLowerCase() === 'qa'
+            || envId.toLocaleLowerCase() === 'beta'
+            || envId.toLocaleLowerCase() === 'preprod'
+            || envId.toLocaleLowerCase() === 'preprodeu01'
+            || envId.toLocaleLowerCase() === 'seb') {
             props.onSignicatEnvChange(envId);
           }
         }}
@@ -266,7 +271,7 @@ const ChangeSettingsUI = props => (
 const ActivatedStateUI = props => (
   <View style={styles.container}>
     {
-      props.appMode === AppState.INAPP && (
+      props.appMode === AppStateType.INAPP && (
         <View style={{ flexDirection: 'row' }}>
           <Text style={{
             fontSize: 18, paddingRight: 10, height: 50, textAlignVertical: 'center',
@@ -296,7 +301,7 @@ const ActivatedStateUI = props => (
     <TouchableOpacity
       accessibilityRole="button"
       onPress={() => {
-        if (props.appMode === AppState.WEB2APP) {
+        if (props.appMode === AppStateType.WEB2APP) {
           Alert.alert('Warning!', 'Please start authentication from website');
         } else {
           props.startAuthenticate();
@@ -306,7 +311,7 @@ const ActivatedStateUI = props => (
     >
       <Text style={styles.link}>
           Authenticate
-        {props.appMode === AppState.WEB2APP ? ' from web' : ' from device'}
+        {props.appMode === AppStateType.WEB2APP ? ' from web' : ' from device'}
       </Text>
     </TouchableOpacity>
     <TouchableOpacity

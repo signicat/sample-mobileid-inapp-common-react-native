@@ -8,6 +8,19 @@ This app requires a backend. A sample backend can be downloaded from Signicat's 
 - Merchant backend-related configurations need to be set in `js/configs/MerchantConfig.js file`
 - Signicat backend-related configurations need to be set in `js/configs/config.json`. Contact Signicat to get configurations for your service.
 
+## Prerequisites
+The following software needs to be installed and configured before building the sample app.
+
+- Node (14.7.0 or higher): https://nodejs.org/en/download/
+- Java (1.8 or higher)
+- Gradle (6.0.1 or higher): https://gradle.org/install/
+- React Native tools: https://reactnative.dev/docs/environment-setup
+- Android Studio (only for Android): https://developer.android.com/studio/install
+- Ruby (only for iOS) (2.3.7 or higher): https://www.ruby-lang.org/en/documentation/installation/
+- xcpretty (only for iOS): https://github.com/xcpretty/xcpretty
+- Xcode (only for iOS): https://apps.apple.com/us/app/xcode/id497799835?mt=12
+- CocoaPods (only for iOS): https://cocoapods.org/
+
 ## Configuration
 To configure the sample app for the first time, run the following commands from the project root folder,
        

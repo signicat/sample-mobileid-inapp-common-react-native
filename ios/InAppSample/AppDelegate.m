@@ -1,25 +1,39 @@
-/**
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
 #import "AppDelegate.h"
 
 #import <React/RCTBridge.h>
 #import <React/RCTBundleURLProvider.h>
-#import <RNCPushNotificationIOS.h>
 #import <React/RCTRootView.h>
+#import <RNCPushNotificationIOS.h>
+
+#ifdef FB_SONARKIT_ENABLED
+#import <FlipperKit/FlipperClient.h>
+#import <FlipperKitLayoutPlugin/FlipperKitLayoutPlugin.h>
+#import <FlipperKitUserDefaultsPlugin/FKUserDefaultsPlugin.h>
+#import <FlipperKitNetworkPlugin/FlipperKitNetworkPlugin.h>
+#import <SKIOSNetworkPlugin/SKIOSNetworkAdapter.h>
+#import <FlipperKitReactPlugin/FlipperKitReactPlugin.h>
+static void InitializeFlipper(UIApplication *application) {
+  FlipperClient *client = [FlipperClient sharedClient];
+  SKDescriptorMapper *layoutDescriptorMapper = [[SKDescriptorMapper alloc] initWithDefaults];
+  [client addPlugin:[[FlipperKitLayoutPlugin alloc] initWithRootNode:application withDescriptorMapper:layoutDescriptorMapper]];
+  [client addPlugin:[[FKUserDefaultsPlugin alloc] initWithSuiteName:nil]];
+  [client addPlugin:[FlipperKitReactPlugin new]];
+  [client addPlugin:[[FlipperKitNetworkPlugin alloc] initWithNetworkAdapter:[SKIOSNetworkAdapter new]]];
+  [client start];
+}
+#endif
 
 @implementation AppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-  
+  #ifdef FB_SONARKIT_ENABLED
+    InitializeFlipper(application);
+  #endif
+
   // wrt initial props
   NSMutableDictionary *initialPropertiesDict = [[NSMutableDictionary alloc]init];
-   
+
    if (launchOptions != nil) {
      NSLog(@"launchOptions: %@", [launchOptions description]);
      NSDictionary *pushNotificationDict = [launchOptions objectForKey:UIApplicationLaunchOptionsRemoteNotificationKey];
@@ -32,7 +46,7 @@
        [initialPropertiesDict addEntriesFromDictionary: launchOptions];
      }
    }
-  
+
   RCTBridge *bridge = [[RCTBridge alloc] initWithDelegate:self launchOptions:launchOptions];
   RCTRootView *rootView = [[RCTRootView alloc] initWithBridge:bridge
                                                    moduleName:@"InAppSample"
@@ -45,14 +59,14 @@
   rootViewController.view = rootView;
   self.window.rootViewController = rootViewController;
   [self.window makeKeyAndVisible];
-  
+
   //initialize EncapModule
   self.encapModule = [[EncapModule alloc] init];
-  
+
   //configure push. This will be needed if authentication is to be started from a website
   self.encapPush = [[EncapPush alloc] initWithDelegate:self.encapModule];
   [self.encapPush didFinishLaunchingWithOptions:launchOptions];
-  
+
   return YES;
 }
 
@@ -71,7 +85,7 @@
 - (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
   NSLog(@"Inside didRegisterForRemoteNotificationsWithDeviceToken. Device token: %@ %@", self.encapPush.deviceToken, deviceToken);
   self.encapPush.deviceToken = deviceToken;
-    
+
   [RNCPushNotificationIOS didRegisterForRemoteNotificationsWithDeviceToken:deviceToken];
 }
 
@@ -79,7 +93,7 @@
 - (void)application:(UIApplication *)application didRegisterUserNotificationSettings:(UIUserNotificationSettings *)notificationSettings {
   NSLog(@"Inside didRegisterUserNotificationSettings");
   [application registerForRemoteNotifications];
-  
+
   [RNCPushNotificationIOS didRegisterUserNotificationSettings:notificationSettings];
 }
 
@@ -87,7 +101,7 @@
 - (void)application:(UIApplication *)application didFailToRegisterForRemoteNotificationsWithError:(NSError *)error {
   //    [EncapTestUtils showMessage:[error localizedDescription] withTitle:@"Registering Push Failed"];
   NSLog(@"Inside Registering Push Failed: %@", [error description]);
-  
+
   [RNCPushNotificationIOS didFailToRegisterForRemoteNotificationsWithError:error];
 }
 
@@ -96,7 +110,7 @@
 fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler
 {
   NSLog(@"Inside didReceiveRemoteNotification");
-  
+
   BOOL isPushEnabled = [[[UIApplication sharedApplication] currentUserNotificationSettings] types] != UIUserNotificationTypeNone;
   if (isPushEnabled) {
     [self.encapPush didReceiveRemoteNotification:userInfo];

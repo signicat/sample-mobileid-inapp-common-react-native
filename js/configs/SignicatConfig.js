@@ -6,8 +6,8 @@ class SignicatConfig {
   static get(id: string): Object {
     let configuration = configurations.get(id);
     if (configuration === undefined || configuration === null) {
-      // Default to Dev
-      configuration = configurations.get('dev');
+      // Default to preprod
+      configuration = configurations.get('preprod');
     }
     return configuration;
   }

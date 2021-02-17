@@ -4,6 +4,7 @@ import axios from 'axios';
 const {
   createAccountEndpointFromDevice,
   initAuthSessionEndpointFromDevice,
+  webRegInfoEndpoint,
 } = require('./configs/MerchantConfig');
 
 const RestClient = {
@@ -31,6 +32,11 @@ const RestClient = {
 
   initAuthSession(authUrl) {
     return new Promise((resolve, reject) => this.get(authUrl, resolve, reject));
+  },
+
+  getWebRegInfo(merchantServer, validActivationCode) {
+    const infoUrl = `${merchantServer + webRegInfoEndpoint}?activationCode=${validActivationCode}`;
+    return new Promise((resolve, reject) => this.get(infoUrl, resolve, reject));
   },
 
   get(url, successFn, errorFn) {

@@ -1,99 +1,72 @@
 import { StyleSheet } from 'react-native';
 import Colors from './Colors';
 
+export const verticalSpacing = 22;
+
 const styles = StyleSheet.create({
-  container: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  linkContainer: {
-    flexWrap: 'wrap',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 8,
-  },
-  buttonContainer: {
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 8,
-    height: 90,
-    backgroundColor: Colors.lightBlue,
-    borderColor: Colors.battleshipGrey,
-  },
-  link: {
-    flex: 2,
-    fontSize: 18,
-    fontWeight: '400',
-    color: Colors.primary,
-  },
-  errorLink: {
-    flex: 2,
-    fontSize: 18,
-    fontWeight: '400',
-    color: Colors.red,
-  },
-  description: {
-    flex: 3,
-    paddingVertical: 16,
-    fontWeight: '400',
-    fontSize: 18,
-    color: Colors.dark,
-  },
-  separator: {
-    backgroundColor: Colors.light,
-    height: 1,
-  },
-  text: {
-    fontSize: 40,
-    fontWeight: '600',
-    textAlign: 'center',
-    color: Colors.black,
-  },
-  background: {
-    paddingBottom: 20,
-    paddingTop: 96,
-    paddingHorizontal: 32,
-    backgroundColor: Colors.lighter,
-  },
-  logo: {
-    opacity: 0.2,
-    overflow: 'visible',
-    resizeMode: 'cover',
-    backgroundColor: 'red',
-  },
-  activationCode: {
-    color: Colors.battleshipGrey,
+  body: {
+    flex: 1,
     backgroundColor: Colors.white,
-    borderColor: Colors.cerulean,
+  },
+  maxsize: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: Colors.white,
+  },
+  container: {
+    paddingHorizontal: 20,
+    backgroundColor: Colors.white,
+  },
+  settingsItemTitleText: {
+    fontFamily: 'OpenSans-SemiBold',
+    fontSize: 16,
+    letterSpacing: -0.07,
+    color: Colors.slate,
+  },
+  settingsItemTitleTextInactive: {
+    fontFamily: 'OpenSans-SemiBold',
+    fontSize: 16,
+    letterSpacing: -0.07,
+    color: Colors.offSwitchOption,
+  },
+  settingsItemDataText: {
+    fontFamily: 'OpenSans-SemiBoldItalic',
+    fontSize: 16,
+    letterSpacing: -0.07,
+    color: Colors.slate,
+  },
+  settingsItemDescriptionText: {
+    fontSize: 16,
+    letterSpacing: -0.07,
+    color: Colors.slate,
+  },
+  activationCodeTitleText: {
+    fontSize: 18,
+    fontFamily: 'OpenSans',
+    letterSpacing: -0.08,
+  },
+  activationCodeTextInput: {
+    fontSize: 24,
+    fontFamily: 'OpenSans',
+    letterSpacing: -0.08,
+    color: Colors.slate,
+    backgroundColor: Colors.white,
+    borderColor: Colors.primaryBlue,
     borderRadius: 6,
     borderWidth: 1,
-    fontSize: 24,
     width: 174,
     textAlign: 'center',
+    marginTop: 30,
   },
   center: {
     alignItems: 'center',
     justifyContent: 'center',
   },
-  scrollView: {
-    backgroundColor: Colors.lighter,
-  },
-  engine: {
-    position: 'absolute',
-    right: 0,
-  },
-  body: {
-    backgroundColor: Colors.white,
-  },
-  footer: {
-    color: Colors.dark,
-    fontSize: 12,
-    fontWeight: '600',
-    padding: 4,
-    paddingRight: 12,
-    textAlign: 'right',
+  whiteOpacity50: {
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
   },
 });
 

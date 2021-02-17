@@ -1,8 +1,8 @@
 [
   {
-    "id": "beta",
-    "encapServerUrl": "<GET_IT_FROM_SIGNICAT>",
-    "encapApplicationId": "<GET_IT_FROM_SIGNICAT>",
-    "encapPublicKey": "<GET_IT_FROM_SIGNICAT>"
+    "id": "preprod",
+    "encapServerUrl": "https://preprod.signicat.com/encap_mobileid",
+    "encapApplicationId": "demo_default",
+    "encapPublicKey": "MFIwEAYHKoZIzj0CAQYFK4EEABoDPgAEAEjNMJgHLf/Gh7ZiLB79LpBzaoL8+RQnfQAccV0FAQ8s77d+OiTy/szEiYBBnRJs8qNdAf0aDBxhxVJ+"
   }
 ]

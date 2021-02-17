@@ -3,6 +3,7 @@ package com.signicat.sampleapp.inapp;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.Application;
+import android.app.FragmentManager;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.os.Build;
@@ -10,6 +11,7 @@ import android.os.Bundle;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
+import androidx.fragment.app.DialogFragment;
 
 import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;
@@ -105,4 +107,7 @@ public class MainActivity extends ReactActivity {
     }
   }
 
+  public void showFragmentDialog(DialogFragment dialog, String tag) {
+    dialog.show(getSupportFragmentManager(), tag);
+  }
 }

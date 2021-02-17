@@ -4,38 +4,54 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.CancellationSignal;
 import android.util.Log;
 
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.encapsecurity.encap.android.client.api.AsyncCallback;
 import com.encapsecurity.encap.android.client.api.AuthMethod;
-import com.encapsecurity.encap.android.client.api.Controller;
 import com.encapsecurity.encap.android.client.api.CancelSessionResult;
+import com.encapsecurity.encap.android.client.api.Controller;
 import com.encapsecurity.encap.android.client.api.DeactivateResult;
+import com.encapsecurity.encap.android.client.api.DeviceAndroidBiometricPromptAuthParameter;
+import com.encapsecurity.encap.android.client.api.DeviceAndroidFingerprintAuthParameter;
 import com.encapsecurity.encap.android.client.api.DevicePinAuthParameter;
 import com.encapsecurity.encap.android.client.api.FinishActivationResult;
 import com.encapsecurity.encap.android.client.api.FinishAuthenticationResult;
 import com.encapsecurity.encap.android.client.api.InputType;
 import com.encapsecurity.encap.android.client.api.StartActivationResult;
+import com.encapsecurity.encap.android.client.api.StartAuthenticationAndActivationResult;
 import com.encapsecurity.encap.android.client.api.StartAuthenticationResult;
 import com.encapsecurity.encap.android.client.api.exception.AuthenticationFailedException;
 import com.encapsecurity.encap.android.client.api.exception.ErrorCode;
 import com.encapsecurity.encap.android.client.api.exception.ErrorCodeException;
 import com.encapsecurity.encap.android.client.util.StringUtil;
+import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.google.firebase.iid.FirebaseInstanceId;
 
 import java.util.List;
 
+enum AuthMethodType {
+    fingerprint("fingerprint"),
+    biometricPrompt("biometricPrompt"),
+    pinCode("pinCode");
+
+    public final String identifier;
+
+    AuthMethodType(String identifier) {
+        this.identifier = identifier;
+    }
+}
 
 public class EncapModule extends ReactContextBaseJavaModule {
-
     public static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
 
     private static final String TAG = "InAppSample_EncapModule";
@@ -43,7 +59,6 @@ public class EncapModule extends ReactContextBaseJavaModule {
 
     private StartActivationResult startActivationResult;
     private StartAuthenticationResult startAuthenticationResult;
-
 
     public EncapModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -58,7 +73,6 @@ public class EncapModule extends ReactContextBaseJavaModule {
     public String getName() {
         return "EncapModule";
     }
-
 
     // Native Methods exposed to react-native
     @ReactMethod
@@ -86,7 +100,7 @@ public class EncapModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void cancelSession(final Callback successCallback, final Callback errorCallback) {
-        Log.d(TAG, "Cancel authentication");
+        Log.d(TAG, "cancelSession");
         getController().cancelSession(new AsyncCallback<CancelSessionResult>() {
             @Override
             public void onSuccess(final CancelSessionResult cancelSessionResult) {
@@ -110,9 +124,19 @@ public class EncapModule extends ReactContextBaseJavaModule {
                 startActivationResult = result;
                 int pinCodeLength = result.getMaxPinCodeLength();
                 InputType pinCodeType = result.getPinCodeType();
-                boolean hasFingerprint = result.getAllowedAuthMethods().contains(AuthMethod.DEVICE_ANDROID_FINGERPRINT);
 
-                invokeCallback(successCallback, pinCodeLength, pinCodeType.name(), hasFingerprint);
+                final List<AuthMethod> methods = startActivationResult.getAllowedAuthMethods();
+                final boolean hasPinCode = methods.contains(AuthMethod.DEVICE_PIN);
+                final boolean hasFingerprint = methods.contains(AuthMethod.DEVICE_ANDROID_FINGERPRINT);
+                final boolean hasFingerprintBiometricPrompt = methods.contains(AuthMethod.DEVICE_ANDROID_BIOMETRIC_PROMPT);
+
+                WritableMap allowedAuthMethods = Arguments.createMap();
+                allowedAuthMethods.putBoolean(AuthMethodType.pinCode.identifier, hasPinCode);
+                allowedAuthMethods.putBoolean(AuthMethodType.fingerprint.identifier, hasFingerprint);
+                allowedAuthMethods.putBoolean(AuthMethodType.biometricPrompt.identifier, hasFingerprintBiometricPrompt);
+                allowedAuthMethods.putBoolean(Constants.BIOMETRY, hasFingerprint || hasFingerprintBiometricPrompt);
+
+                invokeCallback(successCallback, pinCodeLength, pinCodeType.name(), allowedAuthMethods);
             }
 
             public void onFailure(final ErrorCodeException e) {
@@ -124,18 +148,16 @@ public class EncapModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void finishPinCodeActivation(final String pinCode, final Callback successCallback, final Callback errorCallback) {
-        Log.d(TAG, "Finish activation with pinCode = " + pinCode);
+        Log.d(TAG, "Finish activation with pinCode");
         getController().finishActivation(new DevicePinAuthParameter(pinCode), new AsyncCallback<FinishActivationResult>() {
-
             @Override
             public void onSuccess(final FinishActivationResult ignored) {
-                // Log.d(TAG, ignored.getResponseTitle());
-                // Log.d(TAG, ignored.getResponseContent().toString());
                 Log.d(TAG, "finishPinCodeActivation Success");
                 invokeCallback(successCallback);
             }
 
-            public void onFailure(final ErrorCodeException e) {
+            @Override
+            public void onFailure(ErrorCodeException e) {
                 Log.d(TAG, e.toString());
                 invokeErrorCallback(errorCallback, e);
             }
@@ -160,7 +182,6 @@ public class EncapModule extends ReactContextBaseJavaModule {
         });
     }
 
-
     @ReactMethod
     public void getRegistrationId(final Promise promise) {
         final String registrationId = getController().getRegistrationId().toString();
@@ -179,10 +200,18 @@ public class EncapModule extends ReactContextBaseJavaModule {
                 final List<AuthMethod> methods = result.getAllowedAuthMethods();
                 final boolean hasPinCode = methods.contains(AuthMethod.DEVICE_PIN);
                 final boolean hasFingerprint = methods.contains(AuthMethod.DEVICE_ANDROID_FINGERPRINT);
+                final boolean hasFingerprintBiometricPrompt = methods.contains(AuthMethod.DEVICE_ANDROID_BIOMETRIC_PROMPT);
+
                 final String contextTitle = result.getContextTitle() == null ? "" : result.getContextTitle().toString();
                 final String contextContent = result.getContextContent() == null ? null : new String(result.getContextContent());
 
-                invokeCallback(successCallback, hasPinCode, hasFingerprint, contextTitle, contextContent);
+                WritableMap allowedAuthMethods = Arguments.createMap();
+                allowedAuthMethods.putBoolean(AuthMethodType.pinCode.identifier, hasPinCode);
+                allowedAuthMethods.putBoolean(AuthMethodType.fingerprint.identifier, hasFingerprint);
+                allowedAuthMethods.putBoolean(AuthMethodType.biometricPrompt.identifier, hasFingerprintBiometricPrompt);
+                allowedAuthMethods.putBoolean(Constants.BIOMETRY, hasFingerprint || hasFingerprintBiometricPrompt);
+
+                invokeCallback(successCallback, allowedAuthMethods, contextTitle, contextContent);
             }
 
             @Override
@@ -195,7 +224,7 @@ public class EncapModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void finishPinCodeAuthentication(final String pinCode, final Callback successCallback, final Callback errorCallback) {
-        Log.d(TAG, "Finish authentication with pinCode = " + pinCode);
+        Log.d(TAG, "Finish authentication with pinCode");
         getController().finishAuthentication(new DevicePinAuthParameter(pinCode), new AsyncCallback<FinishAuthenticationResult>() {
             @Override
             public void onSuccess(final FinishAuthenticationResult finishAuthenticationResult) {
@@ -210,6 +239,144 @@ public class EncapModule extends ReactContextBaseJavaModule {
         });
     }
 
+    //--------------   Biometric methods
+
+    @ReactMethod
+    public void addOrUpdateBiometricMethod(final String pinCode, final Callback successCallback, final Callback errorCallback) {
+        Log.d(TAG, "startAddOrUpdateOfAuthMethod");
+
+        getController().startAuthenticationAndActivation(null, new AsyncCallback<StartAuthenticationAndActivationResult>() {
+            @Override
+            public void onSuccess(final StartAuthenticationAndActivationResult result) {
+                List<AuthMethod> methods = result.getAllowedAuthMethodsForActivation();
+                final boolean allowedAuthMethodFingerprint = methods.contains(AuthMethod.DEVICE_ANDROID_FINGERPRINT);
+                final boolean supportBiometricPrompt = methods.contains(AuthMethod.DEVICE_ANDROID_BIOMETRIC_PROMPT);
+
+                final DevicePinAuthParameter authParameter = new DevicePinAuthParameter(pinCode);
+                if (supportBiometricPrompt) {
+                    finishAddOrUpdateAuthWithBiometricPrompt(authParameter, successCallback, errorCallback);
+                } else if (allowedAuthMethodFingerprint) {
+                    finishAddOrUpdateAuthWithFingerprint(authParameter, successCallback, errorCallback);
+                } else {
+                    invokeCallback(successCallback);
+                }
+            }
+
+            @Override
+            public void onFailure(final ErrorCodeException e) {
+                Log.d(TAG, e.toString());
+                invokeErrorCallback(errorCallback, e);
+            }
+        });
+    }
+
+    private void finishAddOrUpdateAuthWithBiometricPrompt(DevicePinAuthParameter devicePinAuthParameter, final Callback successCallback, final Callback errorCallback) {
+        final ReactApplicationContext context = getReactApplicationContext();
+
+        DeviceAndroidBiometricPromptAuthParameter biometricAuthParameter = new DeviceAndroidBiometricPromptAuthParameter(context);
+        biometricAuthParameter.setTitle(context.getString(R.string.biometric_add_or_update_title));
+        biometricAuthParameter.setDescription(context.getString(R.string.biometric_add_or_update_description));
+        biometricAuthParameter.setNegativeButtonText(context.getString(R.string.biometric_add_or_update_negative_button));
+
+        getController().finishAuthenticationAndActivation(devicePinAuthParameter, biometricAuthParameter, new AsyncCallback<FinishAuthenticationResult>() {
+            @Override
+            public void onFailure(ErrorCodeException exception) {
+                Log.d(TAG, exception.toString());
+                invokeErrorCallback(errorCallback, exception);
+            }
+
+            @Override
+            public void onSuccess(FinishAuthenticationResult finishAuthenticationResult) {
+                invokeCallback(successCallback);
+            }
+        });
+    }
+
+    private void finishAddOrUpdateAuthWithFingerprint(DevicePinAuthParameter devicePinAuthParameter, final Callback successCallback, final Callback errorCallback) {
+        final CancellationSignal cancellationSignal = new CancellationSignal();
+        DeviceAndroidFingerprintAuthParameter fingerprintAuthParameter = new DeviceAndroidFingerprintAuthParameter(cancellationSignal);
+
+        MainActivity activity = (MainActivity) getReactApplicationContext().getCurrentActivity();
+        if (activity != null) {
+            final FingerprintDialogFragment fingerprintAuthDialogFragment = FingerprintDialogFragment.newInstance(R.string.biometric_add_or_update_title, R.string.biometric_add_or_update_description, R.string.biometric_add_or_update_negative_button);
+            fingerprintAuthDialogFragment.setOnCancelListener(cancellationSignal::cancel);
+            activity.showFragmentDialog(fingerprintAuthDialogFragment, "fingerprint_dialog");
+
+            getController().finishAuthenticationAndActivation(devicePinAuthParameter, fingerprintAuthParameter, new AsyncCallback<FinishAuthenticationResult>() {
+                @Override
+                public void onFailure(ErrorCodeException exception) {
+                    fingerprintAuthDialogFragment.dismiss();
+                    Log.d(TAG, exception.toString());
+                    invokeErrorCallback(errorCallback, exception);
+                }
+
+                @Override
+                public void onSuccess(FinishAuthenticationResult finishAuthenticationResult) {
+                    fingerprintAuthDialogFragment.dismiss();
+                    invokeCallback(successCallback);
+                }
+            });
+        } else {
+            invokeCallback(errorCallback, "MainActivity is not present");
+        }
+    }
+
+    //--------------    Authentication methods
+
+    @ReactMethod
+    public void finishAuthWithBiometricPrompt(final Callback successCallback, final Callback errorCallback) {
+        final ReactApplicationContext context = getReactApplicationContext();
+
+        DeviceAndroidBiometricPromptAuthParameter authParam = new DeviceAndroidBiometricPromptAuthParameter(context);
+        authParam.setTitle(context.getString(R.string.biometric_sign_in_title));
+        authParam.setDescription(context.getString(R.string.biometric_sign_in_description));
+        authParam.setNegativeButtonText(context.getString(R.string.biometric_sign_in_negative_button));
+
+        getController().finishAuthentication(authParam, new AsyncCallback<FinishAuthenticationResult>() {
+            @Override
+            public void onFailure(ErrorCodeException exception) {
+                Log.d(TAG, exception.toString());
+                invokeErrorCallback(errorCallback, exception);
+            }
+
+            @Override
+            public void onSuccess(FinishAuthenticationResult finishAuthenticationResult) {
+                invokeCallback(successCallback);
+            }
+        });
+    }
+
+    @ReactMethod
+    public void finishAuthWithFingerprint(final Callback successCallback, final Callback errorCallback) {
+        MainActivity activity = (MainActivity) getReactApplicationContext().getCurrentActivity();
+        if (activity != null) {
+            final CancellationSignal cancellationSignal = new CancellationSignal();
+            final FingerprintDialogFragment fingerprintAuthDialogFragment = FingerprintDialogFragment.newInstance(R.string.biometric_sign_in_title, R.string.biometric_sign_in_description, R.string.biometric_sign_in_negative_button);
+            // When the `Dialog` was closed, then sends the signal to close the listener for biometric
+            fingerprintAuthDialogFragment.setOnCancelListener(cancellationSignal::cancel);
+            // Show Fingerprint dialog
+            activity.showFragmentDialog(fingerprintAuthDialogFragment, "fingerprint_dialog");
+
+            // Wait until there is a user input
+            DeviceAndroidFingerprintAuthParameter authParam = new DeviceAndroidFingerprintAuthParameter(cancellationSignal);
+            getController().finishAuthentication(authParam, new AsyncCallback<FinishAuthenticationResult>() {
+                @Override
+                public void onFailure(ErrorCodeException exception) {
+                    fingerprintAuthDialogFragment.dismiss();
+                    Log.d(TAG, exception.toString());
+                    invokeErrorCallback(errorCallback, exception);
+                }
+
+                @Override
+                public void onSuccess(FinishAuthenticationResult finishAuthenticationResult) {
+                    fingerprintAuthDialogFragment.dismiss();
+                    invokeCallback(successCallback);
+                }
+            });
+        } else {
+            invokeCallback(errorCallback, "MainActivity is not present");
+        }
+    }
 
     //--------------   Utility Methods
 
@@ -242,8 +409,6 @@ public class EncapModule extends ReactContextBaseJavaModule {
         // ErrorCode name starts with "clientError" or "serverError", therefore the offset value is 11
         return StringUtil.toLowerSnakeAndCamelCase(name, '.', 11);
     }
-
-
 
     /* Received notification from FcmMessagingService and send a event to React Native code */
     private void registerPushReceiver() {

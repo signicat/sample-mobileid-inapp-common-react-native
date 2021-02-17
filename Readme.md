@@ -24,8 +24,7 @@ The following software needs to be installed and configured before building the 
 ## Configuration
 To configure the sample app for the first time, run the following commands from the project root folder,
        
-    rm -rf node_modules
-    npm install
+    npm run lockedinstall
 
 Additional configuration on iOS (first time only),
 

@@ -90,16 +90,16 @@ RCT_REMAP_METHOD(getRegistrationId, getRegistrationIdResolver:(RCTPromiseResolve
 RCT_EXPORT_METHOD(startActivation:(NSString *)activationCode callback:(RCTResponseSenderBlock)successCallback callback:(RCTResponseSenderBlock)errorCallback) {
   RCTLogInfo(@"Inside startActivation with activationCode %@", activationCode);
   [self.encapController startActivationWithCode:activationCode onSuccess:^(EncapStartActivationResult *successResult) {
+    self.startActivationResult = successResult;
     NSNumber *pinInputLength = [NSNumber numberWithUnsignedInteger:successResult.pinCodeLengthMin];
     EncapInputType pinInputType = successResult.pinCodeType;
-    self.startActivationResult = successResult;
-    // NOTE that FaceID and TouchIDs are not used in this sample app. The following line shows how to get their info from Encap API
-    // In your production app, you should also check if your device supports these features and enabled by the user
-    BOOL supportTouchID = [successResult.availableAuthMethods containsObject: [NSNumber numberWithInt:EncapAuthMethodDeviceTouchID]];
-    BOOL supportStrongTouchID = [successResult.availableAuthMethods containsObject: [NSNumber numberWithInt:EncapAuthMethodDeviceStrongTouchID]];
-    BOOL supportFaceID = [successResult.availableAuthMethods containsObject: [NSNumber numberWithInt:EncapAuthMethodDeviceFaceID]];
-    RCTLogInfo(@"Inside startActivation, supportFingerPrint: %@", (supportTouchID||supportStrongTouchID)?@YES:@NO);
-    successCallback(@[pinInputLength, [self stringFromEncapInputType:pinInputType], (supportTouchID||supportStrongTouchID)?@YES:@NO, supportFaceID?@YES:@NO]);
+    
+    // Check if any biometric method is allowed to be used
+    BOOL isBiometryAuthMethodEnabled = [[LAContext alloc] canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:nil];
+    
+    NSDictionary *supportedAuthMethods = [self getAllowedAuthMethods:successResult.availableAuthMethods isBiometryAuthMethodEnabled:isBiometryAuthMethodEnabled];
+    
+    successCallback(@[pinInputLength, [self stringFromEncapInputType:pinInputType], supportedAuthMethods]);
   } onError:^(EncapErrorResult *errorResult) {
     [self handleError:errorResult inState:@"startActivation" callback:errorCallback];
   }];
@@ -131,13 +131,26 @@ RCT_EXPORT_METHOD(startAuthentication: (RCTResponseSenderBlock)successCallback c
   [self.encapController startAuthenticationClientOnly:(NO) onSuccess:^(EncapStartAuthenticationResult * _Nonnull successResult) {
     NSLog(@"Success startAuthentication");
     self.startAuthenticationResult = successResult;
-    BOOL supportTouchID = [successResult.authMethods containsObject: [NSNumber numberWithInt:EncapAuthMethodDeviceTouchID]];
-    BOOL supportStrongTouchID = [successResult.authMethods containsObject: [NSNumber numberWithInt:EncapAuthMethodDeviceStrongTouchID]];
-    BOOL supportPincode = [successResult.authMethods containsObject: [NSNumber numberWithInt:EncapAuthMethodDevicePIN]];
+    // NOTE: *authMethods* check for which biometry is allowed in the device (Not against what is actually enrolled),
+    //       by example: If the user enable faceID / TouchID as authentication method in MobileID then the user block it in the App settings
+    //       the *successResult* will contains FALSE for EncapAuthMethodDeviceFaceID or EncapAuthMethodDeviceStrongTouchID
+    BOOL supportPincode = [successResult.authMethods containsObject:[NSNumber numberWithInt:EncapAuthMethodDevicePIN]];
+    BOOL supportTouchId = [successResult.authMethods containsObject:[NSNumber numberWithInt:EncapAuthMethodDeviceStrongTouchID]];
+    BOOL supportFaceId = [successResult.authMethods containsObject:[NSNumber numberWithInt:EncapAuthMethodDeviceFaceID]];
+
     NSString *contextTitle = successResult.contextTitle?successResult.contextTitle:@"";
     NSString *contextContent = successResult.contextContent?[self stringFromNSData:successResult.contextContent]:@"";
-    successCallback(@[supportPincode?@YES:@NO, (supportTouchID||supportStrongTouchID)?@YES:@NO, contextTitle, contextContent]);
 
+    successCallback(@[
+      @{
+        PINCODE: supportPincode ? @YES : @NO,
+        TOUCH_ID: supportTouchId ? @YES : @NO,
+        FACE_ID: supportFaceId ? @YES : @NO,
+        BIOMETRY: (supportTouchId || supportFaceId) ? @YES : @NO,
+      },
+      contextTitle,
+      contextContent
+    ]);
   } onError:^(EncapErrorResult * _Nonnull errorResult) {
     NSLog(@"Fail startAuthentication");
     [self handleError:errorResult inState:@"startAuthentication" callback:errorCallback];
@@ -213,6 +226,31 @@ RCT_EXPORT_METHOD(finishPinCodeAuthentication:(NSString *)pinCode callback:(RCTR
     // string is not null terminated
     return [[NSString alloc] initWithData:nsData encoding:NSUTF8StringEncoding];
   }
+}
+
+-(NSDictionary*)getAllowedAuthMethods:(NSSet *)allowedEncapAuthMethods isBiometryAuthMethodEnabled: (BOOL)biometryEnabled {
+  BOOL isPincodeAllowed = [allowedEncapAuthMethods containsObject: [NSNumber numberWithInt:EncapAuthMethodDevicePIN]];
+  
+  // NOTE: Actually *allowedEncapAuthMethods* will contains the allowed methods based on what actually the
+  // device supports; it means by example if the user disables the biometric in the iOS app settings ENCAP
+  // will return false even though they have configured in the server that supports any authentication method.
+  // Encap will do an *AND* operation between what is actually configured in the server versus what it
+  // actually supports.
+  BOOL isTouchIdAvailableAuthMethod = [allowedEncapAuthMethods containsObject: [NSNumber numberWithInt:EncapAuthMethodDeviceStrongTouchID]];
+  BOOL serverSupportTouchIdUnknown = biometryEnabled == false && isTouchIdAvailableAuthMethod == false;
+  BOOL serverSupportTouchId = biometryEnabled && isTouchIdAvailableAuthMethod;
+  NSString *touchIdAllowed = serverSupportTouchIdUnknown ? @"unknown" : (serverSupportTouchId ? @"true" : @"false");
+  
+  BOOL isFaceIdAvailableAuthMethod = [allowedEncapAuthMethods containsObject: [NSNumber numberWithInt:EncapAuthMethodDeviceFaceID]];
+  BOOL serverSupportFaceIdUnknown = biometryEnabled == false && isFaceIdAvailableAuthMethod == false;
+  BOOL serverSupportFaceId = biometryEnabled && isFaceIdAvailableAuthMethod;
+  NSString *faceIdAllowed = serverSupportFaceIdUnknown ? @"unknown" : (serverSupportFaceId ? @"true" : @"false");
+  
+  return @{
+    PINCODE: isPincodeAllowed ? @"true" : @"false",
+    TOUCH_ID: touchIdAllowed,
+    FACE_ID: faceIdAllowed
+  };
 }
 
 + (BOOL)requiresMainQueueSetup

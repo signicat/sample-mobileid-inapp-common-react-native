@@ -2,16 +2,26 @@ node_modules/
 
 build/
 .idea
+*.iml
 .gradle
 
 android/app/build/
 android/.gradle/
+android/local.properties
 
 ios/build/
+
+# CocoaPods
 ios/Pods/
+ios/Podfile.lock
 
 .DS_Store
 
-#/ios/*xcworkspace/xcuserdata/
+xcuserdata
+xcuserdata/**/*
+!xcuserdata/**/xcschemes/*
 
 build.properties
+
+fastlane/report.xml
+

@@ -5,4 +5,10 @@
     <string name="notification_channel_desc">SignicatInAppSample</string>
     <string name="notification_authentication_title">InAppSample</string>
     <string name="notification_authentication_content">Start authentication...</string>
+    <string name="biometric_add_or_update_title">Register biometry</string>
+    <string name="biometric_add_or_update_description">Register a biometric method for faster sign-in</string>
+    <string name="biometric_add_or_update_negative_button">Skip</string>
+    <string name="biometric_sign_in_title">Sign in</string>
+    <string name="biometric_sign_in_description">Confirm biometric method to continue</string>
+    <string name="biometric_sign_in_negative_button">Cancel</string>
 </resources>

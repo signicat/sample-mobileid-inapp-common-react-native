@@ -17,10 +17,12 @@ import groovy.json.JsonSlurper
  *   // the name of the generated asset file containing your JS bundle
  *   bundleAssetName: "index.android.bundle",
  *
- *   // the entry file for bundle generation
+ *   // the entry file for bundle generation. If none specified and
+ *   // "index.android.js" exists, it will be used. Otherwise "index.js" is
+ *   // default. Can be overridden with ENTRY_FILE environment variable.
  *   entryFile: "index.android.js",
  *
- *   // https://facebook.github.io/react-native/docs/performance#enable-the-ram-format
+ *   // https://reactnative.dev/docs/performance#enable-the-ram-format
  *   bundleCommand: "ram-bundle",
  *
  *   // whether to bundle JS and assets in debug mode
@@ -78,8 +80,10 @@ import groovy.json.JsonSlurper
  */
 
 project.ext.react = [
-    entryFile: "index.js",
-    enableHermes: false,  // clean and rebuild if changing
+    // the entry file for bundle generation
+    entryFile: getProjectProperty("entryFile", "index.js"), // switch to index.debug.js when Fastlane assembleDebug
+    enableHermes: false, // clean and rebuild if changing - https://hermesengine.dev/
+    bundleInDebug: getProjectProperty("bundleInDebug", "false").toBoolean(), // Fastlane assembleDebug sets it true
 ]
 
 apply from: "../../node_modules/react-native/react.gradle"
@@ -211,7 +215,7 @@ android {
         }
         release {
             // Caution! In production, you need to generate your own keystore file.
-            // see https://facebook.github.io/react-native/docs/signed-apk-android.
+            // see https://reactnative.dev/docs/signed-apk-android.
             signingConfig signingConfigs.release
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
@@ -225,6 +229,37 @@ android {
 
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
+    //noinspection GradleDynamicVersion
+    implementation "com.facebook.react:react-native:+"  // From node_modules
+
+    implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
+
+    debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}") {
+        exclude group:'com.facebook.fbjni'
+    }
+    debugImplementation("com.facebook.flipper:flipper-network-plugin:${FLIPPER_VERSION}") {
+        exclude group:'com.facebook.flipper'
+        exclude group:'com.squareup.okhttp3', module:'okhttp'
+    }
+    debugImplementation("com.facebook.flipper:flipper-fresco-plugin:${FLIPPER_VERSION}") {
+        exclude group:'com.facebook.flipper'
+    }
+
+    // Google
+    implementation 'androidx.biometric:biometric:1.0.1'
+    implementation 'com.google.android.material:material:1.2.1'
+    implementation "androidx.fragment:fragment:1.2.5"
+
+    // FCM
+    implementation 'com.google.firebase:firebase-core:16.0.6'
+    implementation 'com.google.firebase:firebase-iid:17.0.4'
+    implementation 'com.google.firebase:firebase-messaging:17.3.4'
+
+    // Encap
+    // TODO Make sure that this library available in your build repo
+    implementation 'com.encapsecurity:encap-android-api:3.9.5@aar'
+
+    // implementation 'com.google.firebase:firebase-analytics:17.2.0'
 
     if (enableHermes) {
         def hermesPath = "../../node_modules/hermes-engine/android/";
@@ -233,24 +268,6 @@ dependencies {
     } else {
         implementation jscFlavor
     }
-
-    //android
-    implementation 'com.android.support:appcompat-v7:28.0.0'
-    implementation 'com.android.support:support-v4:28.0.0'
-
-    // FCM
-    implementation 'com.google.firebase:firebase-core:16.0.6'
-    implementation 'com.google.firebase:firebase-iid:17.0.4'
-    implementation 'com.google.firebase:firebase-messaging:17.3.4'
-
-    // react-native.
-    implementation ("com.facebook.react:react-native:0.61.2") { force = true }
-
-    // Encap
-    // TODO Make sure that this library available in your build repo
-    implementation 'com.encapsecurity:encap-android-api:3.5.11@aar'
-
-    // implementation 'com.google.firebase:firebase-analytics:17.2.0'
 }
 
 // Run this once to be able to run the application with BUCK

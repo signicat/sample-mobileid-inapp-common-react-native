@@ -1,23 +1,24 @@
 import React from 'react';
 import {
-  StyleSheet, TextInput, TouchableWithoutFeedback, View,
+  StyleSheet, TextInput, TouchableOpacity, TouchableWithoutFeedback, View,
 } from 'react-native';
 import Colors from '../Colors';
+import I18n from '../../i18n/i18n';
 
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    width: 180,
+    width: 220,
   },
   hiddenInput: {
     width: 0,
     height: 0,
   },
   circle: {
-    width: 34,
-    height: 34,
-    borderRadius: 34,
+    width: 44,
+    height: 44,
+    borderRadius: 44,
     borderWidth: 1,
     borderColor: Colors.primaryBlue,
   },
@@ -85,7 +86,11 @@ export default class PinCodeInput extends React.Component {
 
     return (
       <TouchableWithoutFeedback onPress={this.toggleKeyboard}>
-        <View style={{ alignItems: 'center' }}>
+        <View
+          accessibilityLabel={I18n.t('wcag_pin_input')}
+          accessibilityHint={I18n.t('wcag_pin_input_hint')}
+          style={{ alignItems: 'center' }}
+        >
           <View style={[this.props.style, styles.container]}>
             {codeInputs}
           </View>

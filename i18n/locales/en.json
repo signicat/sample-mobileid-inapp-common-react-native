@@ -34,7 +34,7 @@
   "start_authentication_from_web": "Please start authentication from the website",
   "consent_signature": "Consent signature",
   "configure_merchant_and_signicat_settings": "Configure merchant and Signicat settings",
-  "settings_screen_help_msg": "If disabling the 'Use default server type' option, the external reference and device name will not be transferred to the app during an InApp Web registration - a call to the 'info' endpoint is not done. This affects the auto authentication feature, which depends on the app knowing the external reference. Additionally when authenticating from the device you will need to enter the correct data manually.",
+  "settings_screen_help_msg": "If 'Use default server type' is disabled:\n\n- externalRef and deviceName will not be transferred to the app when registering from the web\n\n- When authenticating, you will need to enter the correct data manually\n\n- Auto authentication will be disabled\n\n- For InApp Mobile registration, app will not check if credentials are already in use\n\n- When deactivating, app will not send request to delete the credentials from the Merchant backend",
   "server_is_sample_backend": "Use default server type",
   "server_is_sample_backend_description": "Disable if using a custom server",
   "inapp_mobile": "InApp Mobile",
@@ -48,5 +48,17 @@
   "auto_auth_device_not_activated": "Auto authentication cannot be enabled until the device is activated",
   "auto_auth_option_description": "Restart the app to trigger this feature after enabling it",
   "authentication_invalidated_description": "The authentication has been invalidated, please try logging in again",
-  "external_ref_and_device_name_missing": "External reference and device name are missing in response"
+  "external_ref_and_device_name_missing": "External reference and device name are missing in response",
+  "external_ref_and_device_name_already_activated": "The externalRef and deviceName are already activated",
+  "do_you_want_to_override": "Do you want to override?",
+  "push_payload": "Push payload:",
+
+  "wcag_go_back": "Go back",
+  "wcag_go_back_hint": "Navigates to the previous screen",
+  "wcag_show_help": "Show help",
+  "wcag_show_help_hint": "Shows helpful information",
+  "wcag_pin_input": "PIN input",
+  "wcag_pin_input_hint": "PIN input shown as filled circles hiding the PIN from view",
+  "wcag_activation_code": "Activation code",
+  "wcag_activation_code_hint": "Displays the activation code as you enter it"
 }

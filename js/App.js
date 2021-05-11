@@ -11,6 +11,7 @@ import {
   Keyboard,
   KeyboardAvoidingView,
 } from 'react-native';
+import { RootSiblingParent } from 'react-native-root-siblings';
 import PushNotificationIOS from '@react-native-community/push-notification-ios';
 import PushNotificationPermissions from '@react-native-community/push-notification-ios';
 import AsyncStorage from '@react-native-community/async-storage';
@@ -27,7 +28,7 @@ import {
   EnterPincodeCodeUI,
   ChooseAppModeUI,
   ChangeSettingsUI,
-  EndOfFlowUI,
+  EndOfFlowUI, alertMsg,
 } from './UserInterfaceUtils';
 import RestClient from './RestClient';
 import SignicatConfig from './configs/SignicatConfig';
@@ -45,15 +46,15 @@ const KEY_ENCAP_APPLICATION_ID = 'KEY_ENCAP_APPLICATION_ID';
 const KEY_AUTHENTICATION = 'authentication';
 const KEY_NOTIFICATION = 'notification';
 const KEY_CHANGE = 'change';
+const CUSTOM_PAYLOAD_DATA = 'custom-push-payload';
 
 const defaultDeviceName = `${Platform.OS}_device`;
 
-
-// TODO: Auth from web not working on iOS unless put app to background then foreground again - then PUSH is received
 class App extends Component {
   constructor(props) {
     super(props);
     console.log(`Starting InAppSample, with props = ${JSON.stringify(props)}`);
+
     this.state = {
       deviceActivated: false,
       authInProgress: false,
@@ -119,7 +120,7 @@ class App extends Component {
     } else if (Platform.OS === 'ios') {
       // ask for permissions once
       PushNotificationIOS.requestPermissions(PushNotificationPermissions.alert).then((result) => {
-        // NOTE - if push notifications permissions is not allowed, the app will not reveive them
+        // NOTE - if push notification permission is not allowed, the app will not receive them
         console.log(result);
       });
 
@@ -135,6 +136,13 @@ class App extends Component {
     AppState.addEventListener(KEY_CHANGE, this.handleAppStateChange);
     this.keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', this.keyboardDidShow);
     this.keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', this.keyboardDidHide);
+
+    // PUSH message arrived when app was in background on older devices where we don't show a small notification
+    // outside of the app, but still want to display the payload once the app comes to foreground
+    if (this.props.pushPayload && this.props.pushPayload.length > 0) {
+      console.log('pushPayload (old device, app was in background): ', this.props.pushPayload);
+      alertMsg(`${I18n.t('push_payload')}\n${this.props.pushPayload}`);
+    }
   }
 
   componentWillUnmount(): void {
@@ -204,10 +212,18 @@ class App extends Component {
     this.setState({ tempIsSampleBackend: enabled });
   };
 
-  onPushNotification = () => {
-    console.log('onPushNotification');
+  // PUSH notification arrives when app is in the foreground
+  // NOTE: In iOS `onPushNotification` will be fired either when the app comes from the push alert or foreground
+  onPushNotification = (notification) => {
+    const pushPayload = Platform.select({
+      ios: () => notification.getData()[CUSTOM_PAYLOAD_DATA] || null,
+      android: () => notification,
+    })();
+    console.log('onPushNotification, pushPayload: ', pushPayload);
     if (this.state.appMode === AppStateType.WEB2APP || this.state.appMode === AppStateType.UNKNOWN) {
-      console.log(`app mode... ${this.state.appMode}`);
+      if (pushPayload !== null && pushPayload.length > 0) {
+        alertMsg(`${I18n.t('push_payload')}\n${pushPayload}`);
+      }
       this.checkAuthAndStartIfAvailable(false);
     }
   };
@@ -435,6 +451,39 @@ class App extends Component {
 
     this.setState({ externalReference: externalRef, currentDevice: deviceName });
 
+    if (this.state.isSampleBackend) {
+      RestClient.isExternalRefAndDeviceNameActivated(this.state.merchantServerUrl, externalRef, deviceName).then((response) => {
+        console.log('isExternalRefAndDeviceNameActivated: ', response);
+        if (response.data !== null) {
+          if (response.data === true) {
+            Alert.alert(
+              I18n.t('external_ref_and_device_name_already_activated'),
+              I18n.t('do_you_want_to_override'),
+              [{
+                text: I18n.t('cancel'),
+                onPress: () => console.log('Cancel pressed'),
+              }, { text: I18n.t('ok'), onPress: () => this.startRegisterFromDevice(externalRef, deviceName) },
+              ],
+            );
+          } else {
+            this.startRegisterFromDevice(externalRef, deviceName);
+          }
+        } else {
+          const errMsg = 'isExternalRefAndDeviceNameActivated response data missing';
+          console.error(errMsg);
+          Alert.alert(I18n.t('error'), errMsg);
+        }
+      }).catch((err) => {
+        console.error(err);
+        Alert.alert(I18n.t('error'), err.toString());
+      });
+    } else {
+      await this.startRegisterFromDevice(externalRef, deviceName);
+    }
+  };
+
+  startRegisterFromDevice = async (externalRef, deviceName) => {
+    console.log('startRegisterFromDevice');
     // create account
     RestClient.startRegisterFromDevice(this.state.merchantServerUrl, externalRef, deviceName).then((response) => {
       console.log(`Create account: ${response.status}`);
@@ -862,6 +911,17 @@ class App extends Component {
   // ---------- Deactivate related code START ---------------- //
   deactivate = async () => {
     console.log('deactivate');
+    const { externalReference, currentDevice } = this.state;
+
+    if (this.state.isSampleBackend) {
+      RestClient.deleteDevice(this.state.merchantServerUrl, externalReference, currentDevice).then((response) => {
+        console.log('deleteDevice response: ', response);
+      }).catch((err) => {
+        console.error(err);
+        Alert.alert(I18n.t('error'), err.toString());
+      });
+    }
+
     NativeModules.EncapModule.deactivate().then(() => {
       console.log('encap deactivation success');
       this.storeDataToAsyncStorage(KEY_AUTO_AUTH_OPTION, 'false'); // Not allowed in inactivated state
@@ -875,9 +935,6 @@ class App extends Component {
         tempAutoAuthOption: false,
         appMode: AppStateType.UNKNOWN, // to go back to home screen
       });
-
-      // Note - here, device deactivation is only done at client side just for the sake of testing
-      // Note - in your production app, upon deactivation you should remove the registered device from a server also
     }).catch((err) => {
       console.error(`deactivate error ${err}`);
     });
@@ -957,14 +1014,9 @@ class App extends Component {
   }
 
    validURL = (str) => {
-     const pattern = new RegExp('^(https?:\\/\\/)?' // protocol
-         + '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' // domain name
-         + '^https?:\\/\\/(localhost:([0-9]){2,})?$|' // OR localhost
-        + '((\\d{1,3}\\.){3}\\d{1,3}))' // OR ip (v4) address
-        + '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' // port and path
-        + '(\\?[;&a-z\\d%_.~+=-]*)?' // query string
-        + '(\\#[-a-z\\d_]*)?$', 'i'); // fragment locator
-     return !!pattern.test(str);
+     const httpsRegex = new RegExp('^https:\\/\\/\\w+(\\.\\w+)*(:[0-9]+)?\\/?(\\/[.-\\w]*)*$', 'i');
+     const httpRegex = new RegExp('^http:\\/\\/\\w+(\\.\\w+)*(:[0-9]+)?\\/?(\\/[.-\\w]*)*$', 'i');
+     return !!httpsRegex.test(str) || !!httpRegex.test(str);
    }
 
    goToHomeScreen = () => {
@@ -977,6 +1029,7 @@ class App extends Component {
      const statusBarInvert = this.state.appMode === AppStateType.END_OF_FLOW;
      const barStyle = Platform.OS === 'ios' ? 'dark-content' : 'light-content';
      return (
+       <RootSiblingParent>
        <KeyboardAvoidingView
          style={{ flex: 1 }}
          behavior="padding"
@@ -1021,7 +1074,8 @@ class App extends Component {
                {
                 this.state.appMode === AppStateType.SETTINGS && (
                   <ChangeSettingsUI
-                    currentMerchantServer={this.state.merchantServerUrl}
+                    merchantServerUrl={this.state.merchantServerUrl}
+                    tempMerchantServerUrl={this.state.tempMerchantServerUrl}
                     encapAppId={this.state.encapAppId}
                     tempEncapAppId={this.state.tempEncapAppId}
                     signicatEnvId={this.state.signicatEnvId}
@@ -1123,6 +1177,7 @@ class App extends Component {
            }
          </SafeAreaView>
        </KeyboardAvoidingView>
+       </RootSiblingParent>
      );
    }
 }

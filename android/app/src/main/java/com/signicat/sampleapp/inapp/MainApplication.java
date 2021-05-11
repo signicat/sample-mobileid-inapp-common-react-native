@@ -7,7 +7,6 @@ import android.util.Log;
 
 import com.encapsecurity.encap.android.client.api.AndroidControllerFactory;
 import com.encapsecurity.encap.android.client.api.Controller;
-import com.encapsecurity.encap.android.client.util.LoadLibraryHelper;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
 import com.facebook.react.ReactInstanceManager;
@@ -24,10 +23,6 @@ public class MainApplication extends Application implements ReactApplication {
 
     public static String TAG = "Signicat Sample InApp";
 
-    public static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
-
-
-
     private static Controller encapController;
 
     private boolean isAppInForeground = false;
@@ -43,7 +38,7 @@ public class MainApplication extends Application implements ReactApplication {
 
     // Load Encap Library
     static {
-        LoadLibraryHelper.loadLibrary("encap-android-native-api");
+        System.loadLibrary("encap-android-native-api");
     }
 
     private final ReactNativeHost mReactNativeHost =

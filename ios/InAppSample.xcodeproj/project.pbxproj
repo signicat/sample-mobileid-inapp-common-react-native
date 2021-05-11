@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -23,15 +23,14 @@
 		8C927A6882E44C6BA1BDBA8D /* OpenSans-BoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3745420B25684189B1AD096B /* OpenSans-BoldItalic.ttf */; };
 		B03904A596CC41A9898698AB /* OpenSans-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4CB0BA96958E4577899FE758 /* OpenSans-SemiBold.ttf */; };
 		B45A0D96039F4116B18871EF /* OpenSans-SemiBoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 43CB21ED9219456D88C8F18F /* OpenSans-SemiBoldItalic.ttf */; };
+		CF77A4052600CB2E0042A2A0 /* EncapAPI.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = CF77A4012600C9D60042A2A0 /* EncapAPI.xcframework */; };
 		CF8483AF25BF52FB00E903F1 /* LocalAuthentication.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F7CF9E70235C9DAE0094CD9B /* LocalAuthentication.framework */; };
 		CF8483B425BF536300E903F1 /* swiftfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF84833F25BF4AAC00E903F1 /* swiftfile.swift */; };
 		CFF709FD258C9D230048D3F3 /* UserNotifications.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CFF709FC258C9D230048D3F3 /* UserNotifications.framework */; };
 		DA47B067F81546B292F27BC5 /* OpenSans-ExtraBoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B92D69AAEB3A4304BA9B4C66 /* OpenSans-ExtraBoldItalic.ttf */; };
 		F709B9B4240BED42005D04A2 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = F709B9B2240BED42005D04A2 /* Localizable.strings */; };
-		F79AC44923DB9EDD0077191A /* EncapAPI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F79AC44823DB9EDD0077191A /* EncapAPI.framework */; };
 		F79AC45A23DB9FA20077191A /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F79AC45923DB9FA20077191A /* CoreLocation.framework */; };
 		F79AC45C23DB9FB70077191A /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F79AC45B23DB9FB70077191A /* WebKit.framework */; };
-		F7CF9E6B235C95620094CD9B /* EncapAPI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F7CF9E6A235C95610094CD9B /* EncapAPI.framework */; };
 		F7CF9E6D235C9D930094CD9B /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F7CF9E6C235C9D930094CD9B /* Security.framework */; };
 		F7CF9E6F235C9D9A0094CD9B /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F7CF9E6E235C9D9A0094CD9B /* SystemConfiguration.framework */; };
 		F7CF9E71235C9DAE0094CD9B /* LocalAuthentication.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F7CF9E70235C9DAE0094CD9B /* LocalAuthentication.framework */; };
@@ -72,6 +71,7 @@
 		B496025004254ECC879C6B21 /* OpenSans-ExtraBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans-ExtraBold.ttf"; path = "../assets/fonts/OpenSans-ExtraBold.ttf"; sourceTree = "<group>"; };
 		B92D69AAEB3A4304BA9B4C66 /* OpenSans-ExtraBoldItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans-ExtraBoldItalic.ttf"; path = "../assets/fonts/OpenSans-ExtraBoldItalic.ttf"; sourceTree = "<group>"; };
 		CC1144D29C1D444D91C7BBB7 /* OpenSans-Light.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans-Light.ttf"; path = "../assets/fonts/OpenSans-Light.ttf"; sourceTree = "<group>"; };
+		CF77A4012600C9D60042A2A0 /* EncapAPI.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = EncapAPI.xcframework; sourceTree = "<group>"; };
 		CF84833F25BF4AAC00E903F1 /* swiftfile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = swiftfile.swift; sourceTree = "<group>"; };
 		CFF709FC258C9D230048D3F3 /* UserNotifications.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UserNotifications.framework; path = System/Library/Frameworks/UserNotifications.framework; sourceTree = SDKROOT; };
 		D9B67E3E0152B6E808736DCA /* Pods-InAppSampleTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-InAppSampleTests.debug.xcconfig"; path = "Target Support Files/Pods-InAppSampleTests/Pods-InAppSampleTests.debug.xcconfig"; sourceTree = "<group>"; };
@@ -80,10 +80,8 @@
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		ED2971642150620600B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS12.0.sdk/System/Library/Frameworks/JavaScriptCore.framework; sourceTree = DEVELOPER_DIR; };
 		F709B9B3240BED42005D04A2 /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Base; path = InAppSample/Base.lproj/Localizable.strings; sourceTree = "<group>"; };
-		F79AC44823DB9EDD0077191A /* EncapAPI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = EncapAPI.framework; sourceTree = "<group>"; };
 		F79AC45923DB9FA20077191A /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
 		F79AC45B23DB9FB70077191A /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
-		F7CF9E6A235C95610094CD9B /* EncapAPI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = EncapAPI.framework; sourceTree = "<group>"; };
 		F7CF9E6C235C9D930094CD9B /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		F7CF9E6E235C9D9A0094CD9B /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		F7CF9E70235C9DAE0094CD9B /* LocalAuthentication.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = LocalAuthentication.framework; path = System/Library/Frameworks/LocalAuthentication.framework; sourceTree = SDKROOT; };
@@ -109,11 +107,10 @@
 				F79AC45C23DB9FB70077191A /* WebKit.framework in Frameworks */,
 				F79AC45A23DB9FA20077191A /* CoreLocation.framework in Frameworks */,
 				F7CF9E71235C9DAE0094CD9B /* LocalAuthentication.framework in Frameworks */,
-				F79AC44923DB9EDD0077191A /* EncapAPI.framework in Frameworks */,
+				CF77A4052600CB2E0042A2A0 /* EncapAPI.xcframework in Frameworks */,
 				F7CF9E6D235C9D930094CD9B /* Security.framework in Frameworks */,
 				CFF709FD258C9D230048D3F3 /* UserNotifications.framework in Frameworks */,
 				F7CF9E6F235C9D9A0094CD9B /* SystemConfiguration.framework in Frameworks */,
-				F7CF9E6B235C95620094CD9B /* EncapAPI.framework in Frameworks */,
 				CF8483AF25BF52FB00E903F1 /* LocalAuthentication.framework in Frameworks */,
 				17CC93ABC43C17064F331069 /* libPods-InAppSample.a in Frameworks */,
 			);
@@ -178,10 +175,10 @@
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				CF77A4012600C9D60042A2A0 /* EncapAPI.xcframework */,
 				CFF709FC258C9D230048D3F3 /* UserNotifications.framework */,
 				F79AC45B23DB9FB70077191A /* WebKit.framework */,
 				F79AC45923DB9FA20077191A /* CoreLocation.framework */,
-				F79AC44823DB9EDD0077191A /* EncapAPI.framework */,
 				F7CF9E70235C9DAE0094CD9B /* LocalAuthentication.framework */,
 				F7CF9E6E235C9D9A0094CD9B /* SystemConfiguration.framework */,
 				F7CF9E6C235C9D930094CD9B /* Security.framework */,
@@ -203,7 +200,6 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
-				F7CF9E6A235C95610094CD9B /* EncapAPI.framework */,
 				13B07FAE1A68108700A75B9A /* InAppSample */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				00E356EF1AD99517003FC87E /* InAppSampleTests */,
@@ -517,7 +513,11 @@
 				);
 				INFOPLIST_FILE = InAppSampleTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				OTHER_LDFLAGS = (
 					"-ObjC",
 					"-lc++",
@@ -545,7 +545,11 @@
 				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = InAppSampleTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				OTHER_LDFLAGS = (
 					"-ObjC",
 					"-lc++",
@@ -569,7 +573,7 @@
 				CODE_SIGN_ENTITLEMENTS = InAppSample/InAppSample.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 103;
+				CURRENT_PROJECT_VERSION = 109;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = Y2Y8VXX8PM;
 				ENABLE_BITCODE = NO;
@@ -578,8 +582,11 @@
 					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = InAppSample/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 3.2.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 3.3.0;
 				OTHER_CFLAGS = "$(inherited)";
 				OTHER_LDFLAGS = (
 					"$(inherited)",
@@ -605,7 +612,7 @@
 				CODE_SIGN_ENTITLEMENTS = InAppSample/InAppSample.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 103;
+				CURRENT_PROJECT_VERSION = 109;
 				DEVELOPMENT_TEAM = Y2Y8VXX8PM;
 				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -613,8 +620,11 @@
 					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = InAppSample/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 3.2.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 3.3.0;
 				OTHER_CFLAGS = "$(inherited)";
 				OTHER_LDFLAGS = (
 					"$(inherited)",
@@ -661,6 +671,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				DEFINES_MODULE = YES;
+				ENABLE_BITCODE = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -717,6 +728,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
 				COPY_PHASE_STRIP = YES;
 				DEFINES_MODULE = YES;
+				ENABLE_BITCODE = NO;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;

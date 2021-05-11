@@ -6,11 +6,13 @@ import {
   Image,
 } from 'react-native';
 import Colors from '../Colors';
+import I18n from '../../i18n/i18n';
+import styles from '../Styles';
 
 const arrowLeftInvertedImage = require('../../assets/arrow_left_inverted.png');
 const helpInvertedImage = require('../../assets/help_inverted.png');
 
-const imageSize = 25;
+const imageSize = 30;
 
 const captionTextStyle = {
   fontFamily: 'OpenSans-SemiBold',
@@ -24,6 +26,7 @@ const sharedStyle = {
   flex: 2, // This also affects the horizontal touchable area for buttons, don't set lower than 2
   justifyContent: 'center',
   paddingHorizontal: 17,
+  minWidth: 44, // WCAG min size
 };
 
 const touchableAreaAdjusterStyle = { height: 50, justifyContent: 'center' };
@@ -48,8 +51,11 @@ const NavBar = (props) => {
       <View style={[sharedStyle]}>
         {props.onPressBack && (
         <TouchableOpacity
+          style={styles.touchableMinSize}
           onPress={props.onPressBack}
           accessibilityRole="button"
+          accessibilityLabel={I18n.t('wcag_go_back')}
+          accessibilityHint={I18n.t('wcag_go_back_hint')}
         >
           <View style={touchableAreaAdjusterStyle}>
             <Image
@@ -79,8 +85,11 @@ const NavBar = (props) => {
       <View style={[sharedStyle, { alignItems: 'flex-end' }]}>
         {props.onPressHelp && (
         <TouchableOpacity
+          style={styles.touchableMinSize}
           onPress={props.onPressHelp}
           accessibilityRole="button"
+          accessibilityLabel={I18n.t('wcag_show_help')}
+          accessibilityHint={I18n.t('wcag_show_help_hint')}
         >
           <View style={touchableAreaAdjusterStyle}>
             <Image

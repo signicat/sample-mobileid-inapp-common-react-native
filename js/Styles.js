@@ -22,7 +22,7 @@ const styles = StyleSheet.create({
   },
   settingsItemTitleText: {
     fontFamily: 'OpenSans-SemiBold',
-    fontSize: 16,
+    fontSize: 17,
     letterSpacing: -0.07,
     color: Colors.slate,
   },
@@ -67,6 +67,10 @@ const styles = StyleSheet.create({
   },
   whiteOpacity50: {
     backgroundColor: 'rgba(255, 255, 255, 0.5)',
+  },
+  touchableMinSize: {
+    minWidth: 44, // WCAG min sizes for buttons
+    minHeight: 44,
   },
 });
 

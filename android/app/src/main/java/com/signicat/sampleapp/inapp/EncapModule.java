@@ -14,9 +14,12 @@ import com.encapsecurity.encap.android.client.api.AuthMethod;
 import com.encapsecurity.encap.android.client.api.CancelSessionResult;
 import com.encapsecurity.encap.android.client.api.Controller;
 import com.encapsecurity.encap.android.client.api.DeactivateResult;
+import com.encapsecurity.encap.android.client.api.DeviceAndroidBiometricPromptActivationParameter;
 import com.encapsecurity.encap.android.client.api.DeviceAndroidBiometricPromptAuthParameter;
+import com.encapsecurity.encap.android.client.api.DeviceAndroidFingerprintActivationParameter;
 import com.encapsecurity.encap.android.client.api.DeviceAndroidFingerprintAuthParameter;
 import com.encapsecurity.encap.android.client.api.DevicePinAuthParameter;
+import com.encapsecurity.encap.android.client.api.EncapConfig;
 import com.encapsecurity.encap.android.client.api.FinishActivationResult;
 import com.encapsecurity.encap.android.client.api.FinishAuthenticationResult;
 import com.encapsecurity.encap.android.client.api.InputType;
@@ -52,7 +55,6 @@ enum AuthMethodType {
 }
 
 public class EncapModule extends ReactContextBaseJavaModule {
-    public static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
 
     private static final String TAG = "InAppSample_EncapModule";
     private BroadcastReceiver broadcastReceiver;
@@ -78,12 +80,15 @@ public class EncapModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void configureEncap(final String serverUrl, final String applicationId, final String publicKey, final Promise promise) {
         Log.d(TAG, "configureEncap. serverUrl: " + serverUrl + " applicationId: " + applicationId + " publicKey: " + publicKey);
+
         try {
-            final Controller controller = getController();
-            controller.setServerUrl(serverUrl);
-            controller.setApplicationId(applicationId);
-            controller.setPublicKey(publicKey);
-            controller.setPushRegistrationId(FirebaseInstanceId.getInstance().getToken());
+            getController().setConfig(new EncapConfig.Builder()
+                    .setServerUrl(serverUrl)
+                    .setApplicationId(applicationId)
+                    .setPublicKeyBase64(publicKey)
+                    .setPushToken(FirebaseInstanceId.getInstance().getToken())
+                    .build());
+            // TODO: Deprecation above but fix attempt, by upgrading FCM, caused broken push on older devices
         } catch (Exception e) {
             promise.reject(e);
         }
@@ -95,7 +100,11 @@ public class EncapModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void isDeviceActivated(final Promise promise) {
         Log.d(TAG, "isDeviceActivated");
-        promise.resolve(getController().isActivated());
+        try {
+            promise.resolve(getController().isActivated());
+        } catch (ErrorCodeException e) {
+            e.printStackTrace();
+        }
     }
 
     @ReactMethod
@@ -273,12 +282,12 @@ public class EncapModule extends ReactContextBaseJavaModule {
     private void finishAddOrUpdateAuthWithBiometricPrompt(DevicePinAuthParameter devicePinAuthParameter, final Callback successCallback, final Callback errorCallback) {
         final ReactApplicationContext context = getReactApplicationContext();
 
-        DeviceAndroidBiometricPromptAuthParameter biometricAuthParameter = new DeviceAndroidBiometricPromptAuthParameter(context);
-        biometricAuthParameter.setTitle(context.getString(R.string.biometric_add_or_update_title));
-        biometricAuthParameter.setDescription(context.getString(R.string.biometric_add_or_update_description));
-        biometricAuthParameter.setNegativeButtonText(context.getString(R.string.biometric_add_or_update_negative_button));
+        DeviceAndroidBiometricPromptActivationParameter biometricActParameter = new DeviceAndroidBiometricPromptActivationParameter(context);
+        biometricActParameter.setTitle(context.getString(R.string.biometric_add_or_update_title));
+        biometricActParameter.setDescription(context.getString(R.string.biometric_add_or_update_description));
+        biometricActParameter.setNegativeButtonText(context.getString(R.string.biometric_add_or_update_negative_button));
 
-        getController().finishAuthenticationAndActivation(devicePinAuthParameter, biometricAuthParameter, new AsyncCallback<FinishAuthenticationResult>() {
+        getController().finishAuthenticationAndActivation(devicePinAuthParameter, biometricActParameter, new AsyncCallback<FinishAuthenticationResult>() {
             @Override
             public void onFailure(ErrorCodeException exception) {
                 Log.d(TAG, exception.toString());
@@ -294,7 +303,7 @@ public class EncapModule extends ReactContextBaseJavaModule {
 
     private void finishAddOrUpdateAuthWithFingerprint(DevicePinAuthParameter devicePinAuthParameter, final Callback successCallback, final Callback errorCallback) {
         final CancellationSignal cancellationSignal = new CancellationSignal();
-        DeviceAndroidFingerprintAuthParameter fingerprintAuthParameter = new DeviceAndroidFingerprintAuthParameter(cancellationSignal);
+        DeviceAndroidFingerprintActivationParameter fingerprintActParameter = new DeviceAndroidFingerprintActivationParameter(cancellationSignal);
 
         MainActivity activity = (MainActivity) getReactApplicationContext().getCurrentActivity();
         if (activity != null) {
@@ -302,7 +311,7 @@ public class EncapModule extends ReactContextBaseJavaModule {
             fingerprintAuthDialogFragment.setOnCancelListener(cancellationSignal::cancel);
             activity.showFragmentDialog(fingerprintAuthDialogFragment, "fingerprint_dialog");
 
-            getController().finishAuthenticationAndActivation(devicePinAuthParameter, fingerprintAuthParameter, new AsyncCallback<FinishAuthenticationResult>() {
+            getController().finishAuthenticationAndActivation(devicePinAuthParameter, fingerprintActParameter, new AsyncCallback<FinishAuthenticationResult>() {
                 @Override
                 public void onFailure(ErrorCodeException exception) {
                     fingerprintAuthDialogFragment.dismiss();
@@ -423,9 +432,10 @@ public class EncapModule extends ReactContextBaseJavaModule {
             @Override
             public void onReceive(final Context context, final Intent intent) {
                 Log.d(TAG, "Received push event. Pass it on to callback");
+                String pushPayloadOrNull = intent.hasExtra(Constants.PUSH_PAYLOAD) ? intent.getStringExtra(Constants.PUSH_PAYLOAD) : null;
                 getReactApplicationContext()
                         .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                        .emit("authentication", null);
+                        .emit("authentication", pushPayloadOrNull);
             }
         };
         Log.d(TAG, "Registering broadcastReceiver");

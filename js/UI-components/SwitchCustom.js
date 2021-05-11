@@ -7,6 +7,7 @@ import Colors from '../Colors';
 
 const SwitchCustom = props => (
   <Switch
+    style={{ transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }] }}
     onValueChange={value => props.onValueChange(value)}
     value={props.value}
     {...(Platform.OS === 'ios' && {

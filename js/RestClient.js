@@ -2,19 +2,31 @@
 import axios from 'axios';
 
 const {
-  createAccountEndpointFromDevice,
-  initAuthSessionEndpointFromDevice,
+  isDeviceActivatedEndpoint,
+  createAccountEndpoint,
+  deleteDeviceEndpoint,
+  initAuthSessionEndpoint,
   webRegInfoEndpoint,
 } = require('./configs/MerchantConfig');
 
 const RestClient = {
+  isExternalRefAndDeviceNameActivated(merchantServer, accountName, deviceName) {
+    const url = `${merchantServer + isDeviceActivatedEndpoint}?externalRef=${accountName}&deviceName=${deviceName}`;
+    return new Promise((resolve, reject) => this.get(url, resolve, reject));
+  },
+
   startRegisterFromDevice(merchantServer, accountName, deviceName) {
-    const startRegisterUrl = `${merchantServer + createAccountEndpointFromDevice}?externalRef=${accountName}&deviceName=${deviceName}`;
+    const startRegisterUrl = `${merchantServer + createAccountEndpoint}?externalRef=${accountName}&deviceName=${deviceName}`;
     return new Promise((resolve, reject) => this.get(startRegisterUrl, resolve, reject));
   },
 
+  deleteDevice(merchantServer, accountName, deviceName) {
+    const deleteDeviceUrl = `${merchantServer + deleteDeviceEndpoint}?externalRef=${accountName}&deviceName=${deviceName}`;
+    return new Promise((resolve, reject) => this.get(deleteDeviceUrl, resolve, reject));
+  },
+
   startAuthFromDevice(merchantServer, externalRef, deviceId) {
-    const startAuthUrl = `${merchantServer + initAuthSessionEndpointFromDevice}?externalRef=${externalRef}&deviceId=${deviceId}`;
+    const startAuthUrl = `${merchantServer + initAuthSessionEndpoint}?externalRef=${externalRef}&deviceId=${deviceId}`;
     return new Promise((resolve, reject) => this.get(startAuthUrl, resolve, reject));
   },
 

@@ -11,6 +11,8 @@ import {
   ActivityIndicator,
   ImageBackground,
 } from 'react-native';
+
+import Toast from 'react-native-root-toast';
 import React from 'react';
 import I18n from '../i18n/i18n';
 
@@ -36,6 +38,17 @@ const rocketIllustrationImageGrey = require('../assets/rocket_illustration_grey.
 const flyingRocketImage = require('../assets/flying_rocket.png');
 const authenticateImage = require('../assets/authenticate.png');
 const cloudsImage = require('../assets/clouds.png');
+
+const alertMsg = async (msg, duration) => {
+  Toast.show(msg, {
+    duration: duration || Toast.durations.LONG,
+    position: Toast.positions.TOP,
+    shadow: true,
+    animation: true,
+    hideOnPress: true,
+    delay: 0,
+  });
+};
 
 const Loading = () => (
   <View style={[styles.maxsize, styles.whiteOpacity50, styles.center]}>
@@ -102,6 +115,8 @@ const EnterActivationCodeUI = (props) => {
         <View style={styles.center}>
           <Text style={styles.activationCodeTitleText}>{I18n.t('enter_activation_code')}</Text>
           <TextInput
+            accessibilityLabel={I18n.t('wcag_activation_code')}
+            accessibilityHint={I18n.t('wcag_activation_code_hint')}
             style={styles.activationCodeTextInput}
             keyboardType="numeric"
             autoFocus
@@ -153,7 +168,7 @@ const getExternalRefAndDeviceNameTextBoxes = props => (
       title={I18n.t('external_reference')}
       editable={props.deviceActivated !== true}
       placeholder={props.externalReference ? props.externalReference : I18n.t('not_set_type_it')}
-      value={props.defaultValue}
+      defaultValue={props.externalReference ? props.externalReference : ''}
       onChangeText={(newExternalReference) => {
         props.onExternalReferenceChange(newExternalReference);
       }}
@@ -163,7 +178,7 @@ const getExternalRefAndDeviceNameTextBoxes = props => (
       title={I18n.t('device_name')}
       editable={props.deviceActivated !== true}
       placeholder={props.currentDevice ? props.currentDevice : I18n.t('not_set_type_it')}
-      value={props.defaultValue}
+      defaultValue={props.currentDevice ? props.currentDevice : ''}
       underlineColorAndroid="transparent"
       onChangeText={(newDeviceName) => {
         props.onDeviceChange(newDeviceName);
@@ -282,7 +297,6 @@ const ChooseAppModeUI = (props) => {
 const ChangeSettingsUI = (props) => {
   console.log('ChangeSettingsUI');
   const envs = SignicatConfig.getEnvironments();
-  const autoAuthTitleTextStyle = props.deviceActivated ? styles.settingsItemTitleText : styles.settingsItemTitleTextInactive;
 
   return (
     <View style={styles.maxsize}>
@@ -307,16 +321,12 @@ const ChangeSettingsUI = (props) => {
               }}
               >
                 <View style={{ flex: 5 }}>
-                  <Text style={[autoAuthTitleTextStyle, { paddingBottom: 6, paddingTop: 2 }]}>
+                  <Text style={[styles.settingsItemTitleText, { paddingBottom: 6, paddingTop: 2 }]}>
                     {I18n.t('auto_auth_option')}
                   </Text>
-                  {
-                    props.deviceActivated && (
-                      <Text style={[styles.settingsItemDescriptionText]}>
-                        {I18n.t('auto_auth_option_description')}
-                      </Text>
-                    )
-                  }
+                  <Text style={[styles.settingsItemDescriptionText]}>
+                    {I18n.t('auto_auth_option_description')}
+                  </Text>
                 </View>
                 <View style={{ flex: 1, alignItems: 'flex-end' }}>
                   <SwitchCustom
@@ -331,8 +341,8 @@ const ChangeSettingsUI = (props) => {
           <TextInputWithTitle
             title={I18n.t('merchant_server_address')}
             autoFocus={false}
-            placeholder={props.currentMerchantServer ? props.currentMerchantServer : 'type http(s)://server:port'}
-            value={props.defaultValue}
+            placeholder={props.tempMerchantServerUrl ? props.tempMerchantServerUrl : 'type http(s)://server:port/mobileid-inapp'}
+            defaultValue={props.tempMerchantServerUrl ? props.tempMerchantServerUrl : props.merchantServerUrl}
             onChangeText={(addr) => {
               if (props.hasValidUrlFormat(addr)) {
                 props.updateMerchantServerUrl(addr);
@@ -375,10 +385,11 @@ const ChangeSettingsUI = (props) => {
             {
               envs.map(item => (
                 <RadioButton
+                  accessibilityRole="radio"
                   key={item.id}
                   id={item.id}
                   selected={(item.id === (props.tempSignicatEnvId ? props.tempSignicatEnvId : props.signicatEnvId))}
-                  size={20}
+                  size={44}
                   label={item.id}
                   onClick={(envId) => {
                     console.log('RadioButton envId: ', envId);
@@ -563,6 +574,7 @@ const EndOfFlowUI = (props) => {
 };
 
 export {
+  alertMsg,
   Loading,
   Header,
   InactivateStateUI,

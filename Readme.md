@@ -16,12 +16,38 @@ The following software needs to be installed and configured before building the 
 - Gradle (6.0.1 or higher): https://gradle.org/install/
 - React Native tools: https://reactnative.dev/docs/environment-setup
 - Android Studio (only for Android): https://developer.android.com/studio/install
-- Ruby (only for iOS) (2.3.7 or higher): https://www.ruby-lang.org/en/documentation/installation/
-- xcpretty (only for iOS): https://github.com/xcpretty/xcpretty
+- Ruby (only for iOS) (2.6.3 or higher - not 3.x.x): https://www.ruby-lang.org/en/documentation/installation/
+- bundler (only for iOS) (2.1.4+ see bottom of Gemfile.lock): https://bundler.io/
+- xcpretty (only for iOS, installed via bundler): https://github.com/xcpretty/xcpretty
+- CocoaPods (only for iOS, installed via bundler): https://cocoapods.org/
 - Xcode (only for iOS): https://apps.apple.com/us/app/xcode/id497799835?mt=12
-- CocoaPods (only for iOS): https://cocoapods.org/
 
-## Configuration
+Some additional Ruby gem dependencies will also be installed via bundler to support Fastlane, https://fastlane.tools/,
+an app automation tool used by Signicat when building and uploading the app to the stores.
+- Fastlane can be ignored for the purposes of running this app
+- For a complete list of Ruby gem dependencies installed via bundler, refer to Gemfile.lock
+
+## Installation of Ruby (iOS only, first time only)
+
+If you already have Ruby 2.6.3+ installed, you can skip this. Otherwise it is recommended to first
+install RVM (Ruby Version Manager) https://rvm.io/rvm/install and then Ruby via RVM.
+
+Open a new terminal and verify Ruby (version 3.x.x not yet supported):
+
+    ruby -v
+
+## Installation of bundler and dependencies (iOS only, first time only)
+Install bundler:
+
+    gem install bundler:<version>
+
+where `<version>` can be found at the bottom of `Gemfile.lock` in this repository.
+
+Install bundler dependencies as specified by Gemfile.lock:
+
+    bundle install
+
+## Install React Native dependencies from package-lock.json
 To configure the sample app for the first time, run the following commands from the project root folder,
        
     npm run lockedinstall
@@ -32,14 +58,14 @@ Additional configuration on iOS (first time only),
     pod deintegrate
     pod install
 
-## Building a project
+## Building and running
 Run on Android
 
     react-native run-android
 
-Run on iOS
+Run on iOS (or run directly from Xcode)
 
-    react-native run-ios or run directly from Xcode
+    react-native run-ios
 
 ## Make application archive
 On Android 
@@ -49,8 +75,8 @@ Make sure that Android SDK is installed and properly configured.
     # assuming you are at the root of the react-native project
     cd android 
     
-    # creates two .apk files in the build/outputs/apk folder
-    gradle build 
+    # creates an .apk file in the build/outputs/apk folder
+    gradle build
     
     # Note that application is signed with an attached sample debug keystore. In your production app, you should generate and use on your own certificate
     

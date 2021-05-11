@@ -47,6 +47,7 @@ const TextInputWithTitle = props => (
         value={props.value}
         underlineColorAndroid="transparent"
         onChangeText={props.onChangeText}
+        defaultValue={props.defaultValue}
       />
     </View>
   </View>

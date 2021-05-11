@@ -13,11 +13,11 @@ static NSString *TAG = @"Sample InApp";
 - (id) init {
   self = [super init];
 
-  if (!self.encapController) {
-    RCTLogInfo(@"Encap module is initialized...");
-    //initialize encap controller
-    self.encapController = [EncapController new];
-  }
+  RCTLogInfo(@"Encap module is initialized...");
+  /// Initialize Encap Controller.
+  /// If the application only support one registration,
+  /// `sharedController` can be used.
+  self.encapController = [EncapController sharedController];
 
   return self;
 }
@@ -75,8 +75,7 @@ RCT_EXPORT_METHOD(cancelSession: (RCTResponseSenderBlock)successCallback callbac
 }
 
 RCT_REMAP_METHOD(getRegistrationId, getRegistrationIdResolver:(RCTPromiseResolveBlock)resolve getRegistrationIdRejecter:(RCTPromiseRejectBlock)reject){
-  EncapConfig *config = [EncapConfig sharedConfig];
-  NSString *registrationId = config.registrationId;
+  NSString *registrationId = [self.encapController registrationId];
   NSLog(@"Inside getRegistrationId, registrationId = %@", registrationId);
 
   if([registrationId isEqual:[NSNull null]]) {
@@ -171,10 +170,11 @@ RCT_EXPORT_METHOD(finishPinCodeAuthentication:(NSString *)pinCode callback:(RCTR
 
 - (void) updateEncapConfig: (NSString *)url publicKey:(NSString *)key applicationId:(NSString *) appId {
   RCTLogInfo(@"Updating Encap Config...");
-  EncapConfig *config = [EncapConfig sharedConfig];
+  EncapConfig *config = [[EncapConfig alloc] init];
   config.serverURL = url;
   config.publicKey = key;
   config.applicationId = appId;
+  [self.encapController setConfig:config];
 }
 
 - (NSString*) stringFromEncapInputType:(EncapInputType) encapInputType {

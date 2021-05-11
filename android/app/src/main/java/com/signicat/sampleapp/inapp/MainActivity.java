@@ -3,7 +3,6 @@ package com.signicat.sampleapp.inapp;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.Application;
-import android.app.FragmentManager;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.os.Build;
@@ -82,8 +81,7 @@ public class MainActivity extends ReactActivity {
       @Nullable
       @Override
       protected Bundle getLaunchOptions() {
-        Bundle bundle = getPlainActivity().getIntent().getExtras();
-        return bundle;
+        return getPlainActivity().getIntent().getExtras();
       }
     };
   }
